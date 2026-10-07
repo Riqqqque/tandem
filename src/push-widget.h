@@ -21,6 +21,10 @@ public:
     virtual double EstimatedKbps() = 0;
     // True when this target encodes separately instead of reusing an OBS encoder.
     virtual bool UsesOwnVideoEncoder() const = 0;
+    // The status line shown under the target (connecting, streaming, errors).
+    virtual QString StatusText() const = 0;
+    // Re-reads the target's name and checkbox after the config was changed elsewhere.
+    virtual void RefreshFromConfig() = 0;
 };
 
 PushWidget* createPushWidget(const std::string& targetId, QWidget* parent = 0);

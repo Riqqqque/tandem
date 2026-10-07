@@ -877,6 +877,17 @@ public:
         return current_kbps_;
     }
 
+    QString StatusText() const override
+    {
+        return msg_ ? msg_->text() : QString();
+    }
+
+    void RefreshFromConfig() override
+    {
+        if (config_)
+            LoadConfig();
+    }
+
     bool UsesOwnVideoEncoder() const override
     {
         if (!config_)

@@ -86,6 +86,10 @@ public:
     ChatConfig chat;
     // Optional upload capacity in Mbps used for the bandwidth warning; 0 = unknown.
     double uploadCapacityMbps = 0;
+    // Dock mode: "simple" or "advanced". Empty until the user picks one.
+    std::string uiMode;
+    // Simple mode quality: 0 = automatic, 1 = lower bitrate, 2 = higher bitrate.
+    int simpleQuality = 0;
 };
 
 // Service settings that hold credentials and never go into the JSON file when the

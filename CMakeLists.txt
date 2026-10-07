@@ -71,6 +71,10 @@ target_sources(${CMAKE_PROJECT_NAME} PRIVATE
   ./src/chat-dock.cpp
   ./src/settings-dialog.h
   ./src/settings-dialog.cpp
+  ./src/auto-encoder.h
+  ./src/auto-encoder.cpp
+  ./src/simple-setup.h
+  ./src/simple-setup.cpp
 )
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE

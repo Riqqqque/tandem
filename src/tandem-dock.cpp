@@ -10,6 +10,7 @@
 #include "chat-controller.h"
 #include "chat-dock.h"
 #include "settings-dialog.h"
+#include "simple-setup.h"
 
 static class GlobalServiceImpl : public GlobalService
 {
@@ -122,8 +123,27 @@ public:
         layout_->setAlignment(Qt::AlignmentFlag::AlignTop);
         layout_->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
+        // Simple / Advanced switch
+        {
+            auto modeRow = new QHBoxLayout();
+            simpleBtn_ = new QPushButton(obs_module_text("Mode.Simple"), container_);
+            advancedBtn_ = new QPushButton(obs_module_text("Mode.Advanced"), container_);
+            for (auto b : { simpleBtn_, advancedBtn_ }) {
+                b->setCheckable(true);
+                modeRow->addWidget(b);
+            }
+            simpleBtn_->setToolTip(obs_module_text("Mode.SimpleTip"));
+            advancedBtn_->setToolTip(obs_module_text("Mode.AdvancedTip"));
+            QObject::connect(simpleBtn_, &QPushButton::clicked, [this]() { SetMode("simple"); });
+            QObject::connect(advancedBtn_, &QPushButton::clicked, [this]() { SetMode("advanced"); });
+            layout_->addLayout(modeRow);
+        }
+        advanced_ = new QWidget(container_);
+        auto advLayout = new QVBoxLayout(advanced_);
+        advLayout->setContentsMargins(0, 0, 0, 0);
+
         // init widget
-        auto addButton = new QPushButton(obs_module_text("Btn.NewTarget"), container_);
+        auto addButton = new QPushButton(obs_module_text("Btn.NewTarget"), advanced_);
         QObject::connect(addButton, &QPushButton::clicked, [this]() {
             auto& global = GlobalMultiOutputConfig();
             auto newId = GenerateId(global);
@@ -137,10 +157,10 @@ public:
                 DeletePushWidget(newId);
             }
         });
-        layout_->addWidget(addButton);
+        advLayout->addWidget(addButton);
 
         // start enabled, stop all
-        auto allBtnContainer = new QWidget(this);
+        auto allBtnContainer = new QWidget(advanced_);
         auto allBtnLayout = new QHBoxLayout();
         allBtnLayout->setContentsMargins(0, 0, 0, 0);
         auto startAllButton = new QPushButton(obs_module_text("Btn.StartEnabled"), allBtnContainer);
@@ -149,7 +169,7 @@ public:
         auto stopAllButton = new QPushButton(obs_module_text("Btn.StopAll"), allBtnContainer);
         allBtnLayout->addWidget(stopAllButton);
         allBtnContainer->setLayout(allBtnLayout);
-        layout_->addWidget(allBtnContainer);
+        advLayout->addWidget(allBtnContainer);
 
         QObject::connect(startAllButton, &QPushButton::clicked, [this]() {
             int started = 0;
@@ -169,17 +189,17 @@ public:
         });
 
         // upload estimate
-        bandwidth_ = new QLabel(container_);
+        bandwidth_ = new QLabel(advanced_);
         bandwidth_->setWordWrap(true);
         bandwidth_->setTextFormat(Qt::PlainText);
-        layout_->addWidget(bandwidth_);
+        advLayout->addWidget(bandwidth_);
         bandwidthTimer_ = new QTimer(this);
         bandwidthTimer_->setInterval(1000);
         QObject::connect(bandwidthTimer_, &QTimer::timeout, [this]() { UpdateBandwidth(); });
         bandwidthTimer_->start();
 
         // load and show outputs
-        outputsContainer_ = new OutputsListWidget(container_);
+        outputsContainer_ = new OutputsListWidget(advanced_);
         outputsContainer_->setDragDropMode(QAbstractItemView::InternalMove);
         outputsContainer_->setSelectionMode(QAbstractItemView::SingleSelection);
         outputsContainer_->setDropIndicatorShown(true);
@@ -211,7 +231,11 @@ public:
             this,
             &MultiOutputWidget::OnOutputMoved
         );
-        layout_->addWidget(outputsContainer_);
+        advLayout->addWidget(outputsContainer_);
+
+        RebuildSimple();
+        layout_->addWidget(advanced_);
+        ApplyStoredMode();
 
         // settings + credits
         {
@@ -353,6 +377,10 @@ public:
         {
             AddPushWidget(x->id);
         }
+        if (simple_) {
+            RebuildSimple();
+            ApplyStoredMode();
+        }
         UpdateBandwidth();
     }
 
@@ -410,6 +438,65 @@ private:
     QListWidget* outputsContainer_ = 0;
     QLabel* bandwidth_ = 0;
     QTimer* bandwidthTimer_ = 0;
+    QWidget* advanced_ = 0;
+    QWidget* simple_ = 0;
+    QPushButton* simpleBtn_ = 0;
+    QPushButton* advancedBtn_ = 0;
+
+    // (Re)creates the Simple page from the current profile's config.
+    void RebuildSimple()
+    {
+        SimpleSetupHost host;
+        host.ensureWidget = [this](const std::string& id) { return EnsurePushWidget(id); };
+        host.changed = [this]() { UpdateBandwidth(); };
+        auto fresh = CreateSimpleSetupWidget(std::move(host), container_);
+        if (simple_) {
+            layout_->replaceWidget(simple_, fresh);
+            simple_->deleteLater();
+        } else {
+            layout_->insertWidget(1, fresh);
+        }
+        simple_ = fresh;
+    }
+
+    void ApplyStoredMode()
+    {
+        auto mode = GlobalMultiOutputConfig().uiMode;
+        SetMode(mode.empty() ? (HasCustomTargets() ? "advanced" : "simple") : mode, false);
+    }
+
+    bool HasCustomTargets()
+    {
+        for (auto& t : GlobalMultiOutputConfig().targets) {
+            if (t->id.rfind("simple-", 0) != 0)
+                return true;
+        }
+        return false;
+    }
+
+    void SetMode(const std::string& mode, bool save = true)
+    {
+        bool simple = mode != "advanced";
+        simple_->setVisible(simple);
+        advanced_->setVisible(!simple);
+        simpleBtn_->setChecked(simple);
+        advancedBtn_->setChecked(!simple);
+        if (save) {
+            GlobalMultiOutputConfig().uiMode = simple ? "simple" : "advanced";
+            SaveConfig();
+        }
+    }
+
+    PushWidget* EnsurePushWidget(const std::string& targetId)
+    {
+        for (auto x : GetAllPushWidgets()) {
+            if (x->GetTargetId() == targetId)
+                return x;
+        }
+        if (!FindById(GlobalMultiOutputConfig().targets, targetId))
+            return nullptr;
+        return AddPushWidget(targetId);
+    }
 
     void DeletePushWidget(const std::string& targetId)
     {

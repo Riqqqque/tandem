@@ -1,45 +1,43 @@
 # Quick start
 
-## 1. Stream to one platform
+The **Tandem** dock has two modes, switched at the top: **Simple** for "pick platforms and go", **Advanced** for full control. Both edit the same targets.
 
-If OBS already streams to one platform (Settings → Stream), keep it. That is your main stream. Tandem adds the others.
+## Simple mode
 
-If you would rather manage every platform in Tandem, that works too; see "All platforms in Tandem" below.
+![Simple mode](https://raw.githubusercontent.com/Riqqqque/tandem/main/docs/images/simple-mode.png)
 
-## 2. Add a second platform
+1. Tick **Stream here** on each platform you want: Twitch, Kick, YouTube. The stream key field appears.
+2. Paste the stream key. Hover the `(?)` to see where each platform shows it. [Details](Platform-Setup.md).
+   - Kick gives each account its own server URL; if the one in your Kick dashboard differs from the default, paste it into **Server URL**.
+3. Optional: tick **Show this chat in Tandem Chat** and enter the channel name. For YouTube, paste your free [API key](Platform-Setup.md#youtube) and the link of your live video (or your channel ID).
+4. Press **Go Live**. The button turns red while you're live and shows which platforms are on. Press it again to stop.
 
-1. In the **Tandem** dock, click **Add new target**.
-2. **Name**: anything, e.g. "Kick".
-3. **Platform**: pick Kick, Twitch, YouTube or Custom. The server URL is filled in for you.
-4. **Stream key**: paste the key from the platform's dashboard. [Where to find it](Platform-Setup.md).
-5. **Video/Audio encoder**: leave "Reuse the streaming encoder as OBS". This is what keeps the CPU/GPU cost near zero.
-6. Click **OK**.
-7. Tick the checkbox next to the target in the dock ("go live with OBS").
+**What Tandem chooses for you**
+- The encoder: NVIDIA NVENC, AMD AMF, Intel QuickSync or Apple VideoToolbox if your computer has one, otherwise x264. Always H.264, which every platform accepts.
+- The bitrate from OBS's output resolution and frame rate (for example 6,000 kbps for 1080p60, 4,500 kbps for 720p60). Pick **Lower** for a slow upload or **Higher** for a fast one.
+- Constant bitrate and 2-second keyframes, which all three platforms recommend.
 
-Click **Start Streaming** in OBS. OBS's own stream starts, and so do all ticked targets. **Stop Streaming** stops them too.
+All ticked platforms share that one encode. Simple mode doesn't need OBS's own stream to be running, but ticked platforms also start when you click OBS's **Start Streaming**.
 
-You can also start or stop a single target with its own **Start** button, or all ticked targets with **Start enabled**.
+The dock shows the upload you'll need; make sure your connection can carry it. See [Bandwidth and performance](Bandwidth-and-Performance.md).
 
-## 3. Add more
+## Advanced mode
 
-Repeat for the third platform. The dock shows the planned upload ("about 13.5 Mbps for 3 outputs"); make sure your connection can carry it. See [Bandwidth and performance](Bandwidth-and-Performance.md).
+Use Advanced mode for custom servers, SRT/RIST or WHIP, reusing OBS's own encoder, different settings per platform, a different scene for one platform, or extra audio tracks.
 
-## All platforms in Tandem
+1. Click **Add new target**.
+2. **Platform**: Twitch, Kick, YouTube or Custom (fills in the server). **Import from OBS** copies OBS's own stream settings.
+3. **Video/Audio encoder**: "Reuse the streaming encoder as OBS" shares OBS's encode (OBS's stream must be running), or pick an encoder to give the target its own. Several targets can **Share from** one another so they still share one encode.
+4. Tick the box next to the target to make it go live with OBS's **Start Streaming** and with **Start enabled**.
 
-You can point OBS's own stream at one platform and add the other two in Tandem (simplest), or add all three in Tandem:
-
-- Targets that reuse OBS's streaming encoder need OBS's stream to be running. If OBS's own stream is not supposed to go anywhere, give one target its own encoder, and let the others **Share from** that target. They will still share a single encode.
+The Simple mode platforms appear in this list too (named Twitch, Kick, YouTube) and can be fine-tuned here.
 
 ## Testing without going live
 
-- **Twitch:** tick **Bandwidth test mode** in the target's settings. The stream reaches Twitch but is not shown to viewers.
+- **Twitch:** in Advanced mode, open the Twitch target and tick **Bandwidth test mode**. The stream reaches Twitch but isn't shown to viewers.
 - **YouTube:** create an unlisted or private stream in YouTube Studio and use its key.
 - **Kick:** stream at an off time or to a test channel.
 
 ## Chat
 
-1. In the **Tandem Chat** dock, click **Settings**.
-2. Tick **Read chat** for each platform and enter the channel (Twitch name, Kick slug, YouTube video URL plus your API key).
-3. Click **OK**. Chat starts automatically when you start streaming, or click **Start chat** now.
-
-See [Unified chat dock](Unified-Chat-Dock.md) and [Chat overlay](Chat-Overlay.md).
+Tick **Show this chat** in Simple mode, or use **Tandem Chat** → **Settings**. Chat starts with Go Live and with OBS's stream, or click **Start chat**. See [Unified chat dock](Unified-Chat-Dock.md) and [Chat overlay](Chat-Overlay.md).

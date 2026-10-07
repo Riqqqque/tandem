@@ -12,6 +12,10 @@ Everything is opt-in. Stream to one platform, two, or all three; read chat from 
 
 ## Features
 
+**Simple or Advanced**
+- Simple mode: tick platforms, paste keys, press Go Live. The encoder and bitrate are chosen for you.
+- Advanced mode: every setting of every target, for custom setups.
+
 **Multistreaming**
 - Extra outputs for Twitch, Kick, YouTube or any RTMP/RTMPS, SRT/RIST or WHIP server.
 - Platform presets fill in the ingest URL; paste your stream key, or import OBS's own stream settings in one click.
@@ -53,12 +57,22 @@ If you used obs-multi-rtmp before, Tandem imports its targets from the same OBS 
 
 ## Quick start
 
-1. In the **Tandem** dock, click **Add new target**.
-2. Pick a **Platform** (Twitch, Kick, YouTube or Custom), paste your stream key, and leave the encoder on "Reuse the streaming encoder as OBS".
-3. Tick the box next to the target so it goes live together with OBS.
-4. Click **Start Streaming** in OBS. OBS's own stream and every ticked target go live together.
+<img src="docs/images/simple-mode.png" alt="Tandem's Simple mode: one card per platform and a Go Live button" align="right" width="260">
 
-For chat: **Tandem Chat** dock → **Settings** → enable the platforms you want and enter the channel names. Chat starts with your stream, or click **Start chat**.
+**Simple mode** (the default):
+
+1. In the **Tandem** dock, tick **Stream here** on each platform you want.
+2. Paste each stream key. Optionally tick **Show this chat** and enter your channel name (YouTube also needs your free API key).
+3. Press **Go Live**.
+
+Tandem picks the best H.264 encoder on your computer (NVIDIA, AMD, Intel or Apple hardware, otherwise x264) and a bitrate that fits your resolution, and every platform shares that one encode. Ticked platforms also go live when you click OBS's own **Start Streaming**.
+
+**Advanced mode** (button at the top of the dock) shows every target with all of its settings: custom servers, SRT/WHIP, reusing OBS's own encoder, separate encoders, scenes and resolutions per target, audio tracks and more. Both modes edit the same targets, so you can switch at any time.
+
+Chat settings are also in **Tandem Chat** → **Settings**.
+
+<br clear="right">
+
 
 Full guides: [docs/wiki](docs/wiki/Home.md).
 

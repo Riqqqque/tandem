@@ -4,6 +4,14 @@ All notable changes to Tandem are listed here. Versions follow [semantic version
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-07
+
+### Added
+- **Simple mode** (the new default for new setups): one card per platform with a "Stream here" checkbox, the stream key and the chat options, plus one **Go Live** button that starts every ticked platform and the chat. Fields stay hidden until a platform is ticked.
+- Automatic encoder choice in Simple mode: the best available H.264 encoder (NVIDIA NVENC, AMD AMF, Intel QuickSync, Apple VideoToolbox, then x264), CBR, 2-second keyframes, bitrate from OBS's output resolution and frame rate, with Lower/Higher quality presets. All platforms share that one encode, so Simple mode works without starting OBS's own stream.
+- One field for YouTube chat that accepts a video link or a channel ID.
+- **Advanced mode** keeps every per-target setting; switch between the two at the top of the dock. Both edit the same targets.
+
 ## [0.1.0] - 2026-10-07
 
 First release of Tandem, forked from obs-multi-rtmp 0.7.4.4.

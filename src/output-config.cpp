@@ -190,6 +190,8 @@ static std::string SaveMultiOutputConfig(MultiOutputConfig& config) {
     json["audio_configs"] = audio_configs;
     json["chat"] = SaveChatConfig(config.chat);
     json["upload-capacity-mbps"] = config.uploadCapacityMbps;
+    json["ui-mode"] = config.uiMode;
+    json["simple-quality"] = config.simpleQuality;
 
     blog(LOG_INFO, TAG "Save %d targets, %d video configs, %d audio configs", target_count, (int)video_configs.size(), (int)audio_configs.size());
 
@@ -325,6 +327,8 @@ static MultiOutputConfig LoadMultiOutputConfig(const std::string& content) {
 
         config.chat = LoadChatConfig(json);
         config.uploadCapacityMbps = (std::max)(0.0, GetJsonField<double>(json, "upload-capacity-mbps").value_or(0.0));
+        config.uiMode = GetJsonField<std::string>(json, "ui-mode").value_or("");
+        config.simpleQuality = std::clamp(GetJsonField<int>(json, "simple-quality").value_or(0), 0, 2);
 
         blog(LOG_INFO, TAG "Load %d targets, %d video configs, %d audio configs", target_count, videocfg_count, audiocfg_count);
 
