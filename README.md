@@ -8,6 +8,8 @@ Everything is opt-in. Stream to one platform, two, or all three; read chat from 
 
 > Tandem is a fork of [obs-multi-rtmp](https://github.com/sorayuki/obs-multi-rtmp) by SoraYuki. See [CREDITS.md](CREDITS.md).
 
+![The optional chat overlay showing Twitch, Kick and YouTube messages together (sample data)](docs/images/overlay.png)
+
 ## Features
 
 **Multistreaming**

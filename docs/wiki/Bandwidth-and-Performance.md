@@ -51,8 +51,6 @@ On the development machine (Ryzen 7 9800X3D, OBS 32.2.2, x264 veryfast 1280×720
 
 Every output received all 3,653 frames. The difference is the network sending (three extra copies) and chat parsing; no extra encoding happens.
 
-A 2-hour soak run with the same setup is documented in the release notes of each version.
-
 ## How Tandem keeps OBS smooth
 
 - All chat networking and parsing runs on Tandem's own threads, never on OBS's video, audio, graphics or UI threads.
