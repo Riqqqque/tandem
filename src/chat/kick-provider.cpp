@@ -104,24 +104,22 @@ std::optional<std::string> KickProvider::ResolveChatroom(const std::string &slug
 
 void KickProvider::Run()
 {
-	if (!CurlSupportsWss()) {
-		PostStatus(ProviderState::Error, "libcurl was built without WebSocket support");
-		return;
-	}
 	backoff_.Reset();
 
+	// Report configuration mistakes before environment problems.
 	std::string chatroom_id(TrimAscii(cfg_.chatroom_id));
-	if (!chatroom_id.empty()) {
-		if (!IsValidKickChatroomId(chatroom_id)) {
-			PostStatus(ProviderState::Error, "Invalid Kick chatroom ID (digits only)");
-			return;
-		}
-	} else {
-		std::string slug(TrimAscii(cfg_.channel));
-		if (!IsValidKickSlug(slug)) {
-			PostStatus(ProviderState::Error, "Invalid Kick channel name");
-			return;
-		}
+	std::string slug(TrimAscii(cfg_.channel));
+	if (!chatroom_id.empty() ? !IsValidKickChatroomId(chatroom_id) : !IsValidKickSlug(slug)) {
+		PostStatus(ProviderState::Error,
+			   !chatroom_id.empty() ? "Invalid Kick chatroom ID (digits only)" : "Invalid Kick channel name");
+		return;
+	}
+	if (!WebSocketsAvailable()) {
+		PostStatus(ProviderState::Error, "libcurl was built without TLS support, so chat cannot connect");
+		return;
+	}
+
+	if (chatroom_id.empty()) {
 		auto id = ResolveChatroom(slug);
 		if (!id)
 			return; // stopped, or a permanent error was posted

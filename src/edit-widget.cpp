@@ -298,7 +298,7 @@ class EditOutputWidgetImpl: public EditOutputWidget
 
         {
             auto action = menu->addAction(obs_module_text("NoShare"));
-            QObject::connect(action, &QAction::triggered, [=]() {
+            QObject::connect(action, &QAction::triggered, [=, this]() {
                 auto& global = GlobalMultiOutputConfig();
                 if (isAudio) {
                     if (!config_->audioConfig.has_value())
@@ -352,7 +352,7 @@ class EditOutputWidgetImpl: public EditOutputWidget
 
         for (auto& item : items) {
             auto action = menu->addAction(QString::fromUtf8(item.second));
-            QObject::connect(action, &QAction::triggered, [=]() {
+            QObject::connect(action, &QAction::triggered, [=, this]() {
                 if (isAudio)
                     config_->audioConfig = item.first;
                 else

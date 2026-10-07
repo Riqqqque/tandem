@@ -29,6 +29,10 @@ void EnsureCurlInit();
 // True when the loaded libcurl lists "wss" among its protocols.
 bool CurlSupportsWss();
 
+// True when secure WebSockets are available at all: through libcurl's own WebSocket API or
+// through Tandem's fallback over a plain libcurl TLS connection (any libcurl with TLS).
+bool WebSocketsAvailable();
+
 // "Tandem/<version>"
 const char *DefaultUserAgent();
 
@@ -78,6 +82,16 @@ private:
 	bool Cancelled() const { return cancel_ && cancel_->load(); }
 	bool WaitSocket(bool for_write, int timeout_ms);
 	void Release();
+
+	// Fallback for libcurl builds without WebSocket support (e.g. the macOS system curl):
+	// libcurl only provides the TLS connection and Tandem does the RFC 6455 handshake and
+	// framing itself.
+	bool ConnectRaw(const std::string &url, const HttpHeaders &headers, long timeout_ms, std::string *err);
+	bool RawSendAll(const void *data, size_t len, int timeout_ms);
+	bool RawSendFrame(int opcode, const void *data, size_t len);
+	RecvResult RawRecv(int timeout_ms);
+	bool raw_ = false;
+	std::string rx_; // raw mode: bytes received but not yet parsed into frames
 
 	void *curl_ = nullptr; // CURL*
 	void *headers_ = nullptr; // curl_slist*

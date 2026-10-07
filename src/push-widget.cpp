@@ -580,7 +580,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         auto now = clock::now();
 
         auto interval = std::chrono::duration_cast<std::chrono::duration<double>>(now - last_info_time_).count();
-        if (interval > 0 && new_bytes >= total_bytes_ && new_frames >= total_frames_)
+        if (interval > 0 && new_bytes >= total_bytes_ && new_frames >= 0 && (uint64_t)new_frames >= total_frames_)
         {
             auto duration = now - begin_time_;
             auto hh = duration_cast<hours>(duration);

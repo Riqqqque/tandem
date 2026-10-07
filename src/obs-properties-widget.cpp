@@ -54,9 +54,9 @@ namespace {
                 layout->addWidget(eye_ = new QCheckBox(u8"👀", this));
 
 #if QT_VERSION >= QT_VERSION_CHECK(6, 7, 0)
-                QObject::connect(eye_, &QCheckBox::checkStateChanged, [=](Qt::CheckState newstate) {
+                QObject::connect(eye_, &QCheckBox::checkStateChanged, [=, this](Qt::CheckState newstate) {
 #else
-                QObject::connect(eye_, &QCheckBox::stateChanged, [=](int newstate) {
+                QObject::connect(eye_, &QCheckBox::stateChanged, [=, this](int newstate) {
 #endif
                     if (newstate == Qt::CheckState::Checked) {
                         edit_->setEchoMode(QLineEdit::EchoMode::Normal);

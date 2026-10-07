@@ -19,6 +19,7 @@ First release of Tandem, forked from obs-multi-rtmp 0.7.4.4.
 - Unified chat dock for Twitch (anonymous, read-only IRC over secure WebSocket), Kick (public chat feed) and YouTube (your own Data API key; HTTP streaming with polling fallback). Per-platform status, filters, timestamps, deletes and bans, 500-message cap, batched updates.
 - Estimated YouTube API quota meter that follows Google's Pacific-time reset; YouTube chat stops cleanly with a clear message when the quota runs out.
 - Optional chat overlay for an OBS Browser Source, served on `127.0.0.1` only, styleable with URL options and Custom CSS.
+- Built-in WebSocket client over libcurl's TLS connection, used when libcurl has no WebSocket support (the macOS system curl, older Linux distributions), so Twitch and Kick chat work everywhere.
 - Settings dialog with Streaming, Chat and Overlay tabs.
 - Unit tests for the chat parsers, the reconnect backoff, the chat hub and the overlay server, plus a command-line chat probe.
 - Docks open the first time Tandem loads.

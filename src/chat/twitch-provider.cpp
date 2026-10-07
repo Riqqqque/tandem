@@ -54,8 +54,8 @@ void TwitchProvider::Run()
 		PostStatus(ProviderState::Error, "Invalid Twitch channel name (1-25 letters, digits or _)");
 		return;
 	}
-	if (!CurlSupportsWss()) {
-		PostStatus(ProviderState::Error, "libcurl was built without WebSocket support");
+	if (!WebSocketsAvailable()) {
+		PostStatus(ProviderState::Error, "libcurl was built without TLS support, so chat cannot connect");
 		return;
 	}
 

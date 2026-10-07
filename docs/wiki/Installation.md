@@ -31,7 +31,7 @@ Current status: the macOS build is produced by CI but has not been tested on a M
 - **Ubuntu / Debian:** install the `.deb` with `sudo apt install ./tandem-<version>-x86_64-linux-gnu.deb`.
 - **Flatpak OBS:** install the `.flatpak` bundle with `flatpak install --user ./tandem.flatpak`.
 
-Current status: Linux builds are produced by CI but have not been tested on a desktop yet. Twitch and Kick chat need a libcurl built with WebSocket support (curl 8.11 or newer enables it by default; some distributions build older versions without it). If yours lacks it, the chat dock says so; streaming and YouTube chat are not affected. Stream keys are stored in the OBS profile folder on Linux.
+Current status: Linux builds are produced by CI but have not been tested on a desktop yet. Chat works with any libcurl that has TLS: when libcurl has no WebSocket support of its own (common on older distributions and on macOS), Tandem uses its built-in WebSocket client over libcurl's TLS connection. Stream keys are stored in the OBS profile folder on Linux.
 
 ## Coming from obs-multi-rtmp
 
