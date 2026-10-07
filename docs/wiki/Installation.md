@@ -8,7 +8,7 @@ Download from the [Releases](https://github.com/Riqqqque/tandem/releases) page. 
 
 - Windows (PowerShell): `Get-FileHash .\tandem-0.1.0-windows-x64-Installer.exe -Algorithm SHA256`
 - macOS: `shasum -a 256 tandem-0.1.0-macos-universal.pkg`
-- Linux: `sha256sum tandem-0.1.0-x86_64-linux-gnu.deb`
+- Linux: `sha256sum tandem-0.1.0-x86_64-linux-gnu-ubuntu-24.04.deb`
 
 The hash must match the one on the release page exactly. Release files are built by GitHub Actions from the tagged source.
 
@@ -28,8 +28,8 @@ Current status: the macOS build is produced by CI but has not been tested on a M
 
 ## Linux
 
-- **Ubuntu / Debian:** install the `.deb` with `sudo apt install ./tandem-<version>-x86_64-linux-gnu.deb`.
-- **Flatpak OBS:** install the `.flatpak` bundle with `flatpak install --user ./tandem.flatpak`.
+- **Ubuntu / Debian:** install the `.deb` that matches your release with `sudo apt install ./tandem-<version>-x86_64-linux-gnu-ubuntu-24.04.deb` (or `-ubuntu-26.04`).
+- **Flatpak OBS:** install the `.flatpak` bundle with `flatpak install --user ./tandem-<version>-flatpak-x86_64.flatpak`.
 
 Current status: Linux builds are produced by CI but have not been tested on a desktop yet. Chat works with any libcurl that has TLS: when libcurl has no WebSocket support of its own (common on older distributions and on macOS), Tandem uses its built-in WebSocket client over libcurl's TLS connection. Stream keys are stored in the OBS profile folder on Linux.
 
