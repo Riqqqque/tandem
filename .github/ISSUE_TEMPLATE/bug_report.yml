@@ -1,0 +1,56 @@
+name: Bug report
+description: Something in Tandem does not work as expected
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting. **Never paste your stream key or API key.** If a log contains one, replace it with `REDACTED`.
+  - type: input
+    id: version
+    attributes:
+      label: Tandem version
+      description: Shown at the bottom of the Tandem dock.
+      placeholder: "0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: obs
+    attributes:
+      label: OBS version and operating system
+      placeholder: "OBS 32.2.2, Windows 11"
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      multiple: true
+      options:
+        - Streaming targets
+        - Twitch chat
+        - Kick chat
+        - YouTube chat
+        - Chat overlay
+        - Settings / install
+    validations:
+      required: true
+  - type: textarea
+    id: what
+    attributes:
+      label: What happened, and what did you expect?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Add a Kick target sharing the OBS encoder
+        2. Start streaming
+        3. ...
+  - type: textarea
+    id: log
+    attributes:
+      label: OBS log
+      description: Help > Log Files > Upload Current Log File, then paste the link. Lines starting with `[tandem]` are the most useful.

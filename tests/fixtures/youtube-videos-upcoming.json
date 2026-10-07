@@ -1,0 +1,1 @@
+{"kind":"youtube#videoListResponse","items":[{"kind":"youtube#video","id":"abcDEF12345","liveStreamingDetails":{"scheduledStartTime":"2026-10-08T17:00:00Z"}}],"pageInfo":{"totalResults":1,"resultsPerPage":1}}

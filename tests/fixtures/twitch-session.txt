@@ -1,0 +1,29 @@
+:tmi.twitch.tv 001 justinfan12345 :Welcome, GLHF!
+:tmi.twitch.tv 002 justinfan12345 :Your host is tmi.twitch.tv
+:tmi.twitch.tv 375 justinfan12345 :-
+:tmi.twitch.tv 376 justinfan12345 :>
+:tmi.twitch.tv CAP * ACK :twitch.tv/tags twitch.tv/commands
+:justinfan12345!justinfan12345@justinfan12345.tmi.twitch.tv JOIN #samplechannel
+:justinfan12345.tmi.twitch.tv 353 justinfan12345 = #samplechannel :justinfan12345
+:justinfan12345.tmi.twitch.tv 366 justinfan12345 #samplechannel :End of /NAMES list
+@emote-only=0;followers-only=-1;r9k=0;room-id=100000001;slow=0;subs-only=0 :tmi.twitch.tv ROOMSTATE #samplechannel
+@badge-info=subscriber/14;badges=broadcaster/1,subscriber/12;color=#1E90FF;display-name=SampleChannel;emotes=;first-msg=0;flags=;id=3f2c8e4a-0001-4a5b-9c1d-000000000001;mod=0;returning-chatter=0;room-id=100000001;subscriber=1;tmi-sent-ts=1791405015123;turbo=0;user-id=100000001;user-type= :samplechannel!samplechannel@samplechannel.tmi.twitch.tv PRIVMSG #samplechannel :Hello chat; welcome in
+@badge-info=;badges=moderator/1,vip/1,partner/1;color=;display-name=;emotes=;id=3f2c8e4a-0001-4a5b-9c1d-000000000002;mod=1;room-id=100000001;tmi-sent-ts=1791405016000;user-id=100000002;user-type=mod :fallbacknick!fallbacknick@fallbacknick.tmi.twitch.tv PRIVMSG #samplechannel :no display name here :) with: colons
+@badges=;color=#FF0000;display-name=Viewer_One;id=3f2c8e4a-0001-4a5b-9c1d-000000000003;reply-parent-msg-body=hi\sthere\:\\you\nnext;tmi-sent-ts=notanumber;user-id=100000003 :viewer_one!viewer_one@viewer_one.tmi.twitch.tv PRIVMSG #samplechannel :@SampleChannel reply text
+@login=viewer_one;room-id=;target-msg-id=3f2c8e4a-0001-4a5b-9c1d-000000000003;tmi-sent-ts=1791405020000 :tmi.twitch.tv CLEARMSG #samplechannel :@SampleChannel reply text
+@ban-duration=600;room-id=100000001;target-user-id=100000003;tmi-sent-ts=1791405021000 :tmi.twitch.tv CLEARCHAT #samplechannel :viewer_one
+@room-id=100000001;tmi-sent-ts=1791405022000 :tmi.twitch.tv CLEARCHAT #samplechannel
+@badge-info=;badges=;color=;display-name=GiftGiver;id=3f2c8e4a-0001-4a5b-9c1d-000000000004;login=giftgiver;msg-id=subgift;system-msg=GiftGiver\sgifted\sa\sTier\s1\ssub!;tmi-sent-ts=1791405023000;user-id=100000004 :tmi.twitch.tv USERNOTICE #samplechannel
+PING :tmi.twitch.tv
+:tmi.twitch.tv PONG tmi.twitch.tv :tandem
+:tmi.twitch.tv RECONNECT
+@msg-id=msg_channel_suspended :tmi.twitch.tv NOTICE #samplechannel :This channel does not exist or has been suspended.
+:tmi.twitch.tv NOTICE * :Login authentication failed
+@msg-id=emote_only_on :tmi.twitch.tv NOTICE #samplechannel :This room is now in emote-only mode.
+@onlytags=1
+:prefixonly
+@a=b :x
+
+   
+:tmi.twitch.tv PRIVMSG
+:nick!nick@nick.tmi.twitch.tv PRIVMSG notachannel :text

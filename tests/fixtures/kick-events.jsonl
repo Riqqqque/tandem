@@ -1,0 +1,16 @@
+{"event":"pusher:connection_established","data":"{\"socket_id\":\"123456.7890123\",\"activity_timeout\":120}"}
+{"event":"pusher_internal:subscription_succeeded","data":"{}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\ChatMessageEvent","data":"{\"id\":\"9b6c1f0e-1111-4c2d-8e3f-000000000001\",\"chatroom_id\":4242,\"content\":\"gg [emote:37226:KEKW] nice [emote:1:x]\",\"type\":\"message\",\"created_at\":\"2026-10-07T18:30:15+00:00\",\"sender\":{\"id\":5550001,\"username\":\"SampleViewer\",\"slug\":\"sampleviewer\",\"identity\":{\"color\":\"#E9113C\",\"badges\":[{\"type\":\"moderator\",\"text\":\"Moderator\"},{\"type\":\"subscriber\",\"text\":\"Subscriber\",\"count\":3},{\"type\":\"og\",\"text\":\"OG\"}]}}}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\ChatMessageEvent","data":{"id":"9b6c1f0e-1111-4c2d-8e3f-000000000002","content":"plain object payload","created_at":"2026-10-07T18:30:16.250Z","sender":{"id":5550002,"username":"OtherViewer","identity":{"badges":[]}},"new_field":{"nested":[1,2,3]}},"channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\MessageDeletedEvent","data":"{\"id\":\"del-1\",\"message\":{\"id\":\"9b6c1f0e-1111-4c2d-8e3f-000000000001\"},\"aiModerated\":false}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\UserBannedEvent","data":"{\"id\":\"ban-1\",\"user\":{\"id\":5550002,\"username\":\"OtherViewer\",\"slug\":\"otherviewer\"},\"banned_by\":{\"id\":0,\"username\":\"SampleMod\"},\"permanent\":false,\"duration\":10}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\ChatroomClearEvent","data":"{\"id\":\"clear-1\"}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\PinnedMessageCreatedEvent","data":"{\"message\":{}}","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\ChatMessageEvent","data":
+{"event":"App\\Events\\ChatMessageEvent","data":"{not json","channel":"chatrooms.4242.v2"}
+{"event":"App\\Events\\ChatMessageEvent","data":"{\"id\":\"x\",\"content\":12345,\"sender\":{\"id\":1}}","channel":"chatrooms.4242.v2"}
+{"event":"pusher:ping","data":{}}
+{"event":"pusher:error","data":{"code":4201,"message":"Pong reply not received"}}
+{"event":"pusher:error","data":{"code":null,"message":"Existing subscription to channel chatrooms.4242.v2"}}
+{"event":"App\\Events\\ChatMessageEvent","data":"{\"id\":\"9b6c1f0e-1111-4c2d-8e3f-000000000003\",\"content\":\"no timestamp, no sender\",\"created_at\":\"yesterday\"}","channel":"chatrooms.4242.v2"}
+["not","an","object"]

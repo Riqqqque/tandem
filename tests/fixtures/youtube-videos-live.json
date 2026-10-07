@@ -1,0 +1,18 @@
+{
+  "kind": "youtube#videoListResponse",
+  "etag": "etag-v",
+  "items": [
+    {
+      "kind": "youtube#video",
+      "etag": "etag-v1",
+      "id": "abcDEF12345",
+      "liveStreamingDetails": {
+        "actualStartTime": "2026-10-07T17:00:00Z",
+        "scheduledStartTime": "2026-10-07T17:00:00Z",
+        "concurrentViewers": "321",
+        "activeLiveChatId": "TEST_LIVE_CHAT_ID_+/="
+      }
+    }
+  ],
+  "pageInfo": {"totalResults": 1, "resultsPerPage": 1}
+}

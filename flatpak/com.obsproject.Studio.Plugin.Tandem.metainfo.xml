@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="addon">
+  <id>com.obsproject.Studio.Plugin.Tandem</id>
+  <extends>com.obsproject.Studio</extends>
+  <name>Tandem</name>
+  <developer id="io.github.riqqqque">
+    <name>Rique</name>
+  </developer>
+  <summary>Stream to Twitch, Kick and YouTube at once from one encode, with a unified chat dock</summary>
+  <description>
+    <p>
+      Tandem adds extra streaming targets to OBS Studio so one OBS session can go live on
+      several platforms at the same time while sharing a single encoder. It also merges
+      chat from Twitch, Kick and YouTube into one dock and an optional local overlay.
+    </p>
+    <p>
+      Based on obs-multi-rtmp by SoraYuki.
+    </p>
+  </description>
+  <url type="homepage">https://github.com/Riqqqque/tandem</url>
+  <url type="vcs-browser">https://github.com/Riqqqque/tandem</url>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>GPL-2.0-or-later</project_license>
+  <releases>
+    <release version="0.1.0" date="2026-10-07"/>
+  </releases>
+</component>

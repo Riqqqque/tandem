@@ -1,0 +1,13 @@
+{
+  "error": {
+    "code": 403,
+    "message": "The caller does not have permission",
+    "errors": [
+      {
+        "message": "The caller does not have permission",
+        "domain": "youtube.liveChat",
+        "reason": "forbidden"
+      }
+    ]
+  }
+}

@@ -1,0 +1,65 @@
+[{
+  "kind": "youtube#liveChatMessageListResponse",
+  "etag": "etag-page-1",
+  "nextPageToken": "TOKEN_PAGE_1",
+  "pollingIntervalMillis": 0,
+  "pageInfo": {"totalResults": 2, "resultsPerPage": 2},
+  "items": [
+    {
+      "kind": "youtube#liveChatMessage",
+      "etag": "etag-m1",
+      "id": "LCC.test-message-0001",
+      "snippet": {
+        "type": "textMessageEvent",
+        "liveChatId": "TEST_LIVE_CHAT_ID",
+        "authorChannelId": "UCaaaaaaaaaaaaaaaaaaaaaa",
+        "publishedAt": "2026-10-07T18:30:15.123456+00:00",
+        "hasDisplayContent": true,
+        "displayMessage": "brace test {\"not\": [an object]} and \\\" tricky \\\\ end }}",
+        "textMessageDetails": {"messageText": "brace test {\"not\": [an object]} and \\\" tricky \\\\ end }}"}
+      },
+      "authorDetails": {
+        "channelId": "UCaaaaaaaaaaaaaaaaaaaaaa",
+        "channelUrl": "http://www.youtube.com/channel/UCaaaaaaaaaaaaaaaaaaaaaa",
+        "displayName": "Sample Viewer",
+        "profileImageUrl": "https://example.invalid/a.jpg",
+        "isVerified": false,
+        "isChatOwner": false,
+        "isChatSponsor": true,
+        "isChatModerator": true
+      }
+    },
+    {
+      "kind": "youtube#liveChatMessage",
+      "id": "LCC.test-message-0002",
+      "snippet": {
+        "type": "superChatEvent",
+        "publishedAt": "2026-10-07T18:30:16Z",
+        "displayMessage": "$5.00 from Big Fan: \"Great stream é\"",
+        "superChatDetails": {"amountMicros": "5000000", "currency": "USD", "amountDisplayString": "$5.00", "userComment": "Great stream é", "tier": 2}
+      },
+      "authorDetails": {"channelId": "UCcccccccccccccccccccccc", "displayName": "Big Fan", "isVerified": true, "isChatOwner": false, "isChatSponsor": false, "isChatModerator": false}
+    }
+  ]
+}
+,
+{
+  "nextPageToken": "TOKEN_PAGE_2",
+  "items": [
+    {"id": "LCC.test-message-0003", "snippet": {"type": "messageDeletedEvent", "publishedAt": "2026-10-07T18:31:00Z", "messageDeletedDetails": {"deletedMessageId": "LCC.test-message-0001"}}, "authorDetails": {"channelId": "UCdddddddddddddddddddddd", "displayName": "Owner", "isChatOwner": true}},
+    {"id": "LCC.test-message-0004", "snippet": {"type": "userBannedEvent", "publishedAt": "2026-10-07T18:31:01Z", "userBannedDetails": {"bannedUserDetails": {"channelId": "UCbbbbbbbbbbbbbbbbbbbbbb", "displayName": "Spammer"}, "banType": "temporary", "banDurationSeconds": "300"}}},
+    {"id": "LCC.test-message-0005", "snippet": {"type": "newSponsorEvent", "publishedAt": "2026-10-07T18:31:02Z", "displayMessage": "Welcome to Gold!", "newSponsorDetails": {"memberLevelName": "Gold", "isUpgrade": false}}, "authorDetails": {"channelId": "UCeeeeeeeeeeeeeeeeeeeeee", "displayName": "New Member", "isChatSponsor": true}},
+    {"id": "LCC.test-message-0006", "snippet": {"type": "memberMilestoneChatEvent", "publishedAt": "2026-10-07T18:31:03Z", "memberMilestoneChatDetails": {"memberLevelName": "Gold", "memberMonth": 12, "userComment": "a year! [ok]"}}, "authorDetails": {"channelId": "UCffffffffffffffffffffff", "displayName": "Loyal Member", "isChatSponsor": true}},
+    {"id": "LCC.test-message-0007", "snippet": {"type": "pollEvent", "publishedAt": "2026-10-07T18:31:04Z"}},
+    {"id": "LCC.test-message-0008", "snippet": {"type": "superStickerEvent", "publishedAt": "2026-10-07T18:31:05Z", "superStickerDetails": {"amountDisplayString": "€2,00", "superStickerMetadata": {"altText": "Dancing cat"}}}, "authorDetails": {"channelId": "UCgggggggggggggggggggggg", "displayName": "Sticker Fan"}}
+  ]
+}
+,
+{
+  "nextPageToken": "TOKEN_PAGE_3",
+  "offlineAt": "2026-10-07T20:00:00Z",
+  "items": [
+    {"id": "LCC.test-message-0009", "snippet": {"type": "chatEndedEvent", "publishedAt": "2026-10-07T20:00:00Z"}}
+  ]
+}
+]
