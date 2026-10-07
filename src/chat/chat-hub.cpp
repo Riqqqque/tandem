@@ -106,6 +106,7 @@ void ChatHub::Post(ChatEvent &&ev)
 			status_[static_cast<int>(ev.platform)] = ev.status;
 			break;
 		case ChatEvent::Kind::Quota:
+		case ChatEvent::Kind::ChannelInfo:
 			break;
 		}
 

@@ -55,7 +55,12 @@ struct TwitchEvent {
 	std::string notice_id;  // Notice: msg-id tag
 	std::string channel;    // channel without '#', lowercase, when the command has one
 	std::string nick;       // Join: who joined
+	std::string room_id;    // Message/RoomState: the channel's numeric Twitch id
 };
+
+// Twitch's "emotes" tag (id:start-end,.../...) -> spans over the UTF-8 text. Positions in the tag
+// count Unicode code points. Malformed or overlapping entries are dropped.
+std::vector<EmoteSpan> ParseTwitchEmotes(std::string_view tag, std::string_view text);
 
 // fallback_now_ms is used when the line has no usable tmi-sent-ts.
 TwitchEvent ParseTwitchLine(std::string_view line, int64_t fallback_now_ms);

@@ -69,6 +69,7 @@ std::optional<std::string> KickProvider::ResolveChatroom(const std::string &slug
 			if (auto id = ParseKickChannelChatroomId(r.body)) {
 				Log(LogLevel::Info, "[chat/kick] %s -> chatroom %s", slug.c_str(), id->c_str());
 				backoff_.Reset();
+				PostChannelInfo(ParseKickChannelUserId(r.body));
 				return id;
 			}
 			auto delay = backoff_.Next(now);

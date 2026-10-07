@@ -39,7 +39,16 @@ private:
 	void HandleLine(const std::string &channel, std::string_view line, WebSocket &ws, bool &joined,
 			std::optional<Clock::time_point> &ping_sent, End &end, std::string &reason);
 
+	void ReportRoom(const std::string &room_id)
+	{
+		if (!room_id.empty() && room_id != reported_room_) {
+			reported_room_ = room_id;
+			PostChannelInfo(room_id);
+		}
+	}
+
 	TwitchChatConfig cfg_;
+	std::string reported_room_;
 	RecentIds seen_{500};
 	Backoff backoff_;
 	std::string nick_;
@@ -228,12 +237,17 @@ void TwitchProvider::HandleLine(const std::string &channel, std::string_view lin
 			mark_joined();
 		break;
 	case Ty::RoomState:
-		if (ev.channel == channel)
+		if (ev.channel == channel) {
 			mark_joined();
+			ReportRoom(ev.room_id);
+		}
 		break;
 	case Ty::Message:
-		if (ev.channel == channel && seen_.Insert(ev.message.id))
-			PostChatMessage(std::move(ev.message));
+		if (ev.channel == channel) {
+			ReportRoom(ev.room_id);
+			if (seen_.Insert(ev.message.id))
+				PostChatMessage(std::move(ev.message));
+		}
 		break;
 	case Ty::DeleteMessage:
 		if (ev.channel == channel)

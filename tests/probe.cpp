@@ -4,6 +4,7 @@
 //   tandem-chat-probe kick <slug> [chatroomId] [seconds]
 //   tandem-chat-probe youtube <video id or URL> [seconds]   (key from env TANDEM_YT_KEY)
 #include "chat-hub.h"
+#include "emotes.h"
 
 #include <chrono>
 #include <cstdio>
@@ -50,12 +51,13 @@ int main(int argc, char **argv)
 	std::string platform = argv[1];
 	int seconds = 30;
 	ChatHub hub(5000, 50);
+	EmoteAnnotator emotes(&hub);
 	std::unique_ptr<ChatProvider> provider;
 
 	if (platform == "twitch") {
 		if (argc > 3)
 			seconds = std::atoi(argv[3]);
-		provider = CreateTwitchProvider({argv[2]}, &hub);
+		provider = CreateTwitchProvider({argv[2]}, &emotes);
 	} else if (platform == "kick") {
 		KickChatConfig cfg;
 		cfg.channel = argv[2];
@@ -66,7 +68,7 @@ int main(int argc, char **argv)
 		}
 		if (argc > next)
 			seconds = std::atoi(argv[next]);
-		provider = CreateKickProvider(cfg, &hub);
+		provider = CreateKickProvider(cfg, &emotes);
 	} else if (platform == "youtube") {
 		YouTubeChatConfig cfg;
 		const char *key = std::getenv("TANDEM_YT_KEY");
@@ -75,7 +77,7 @@ int main(int argc, char **argv)
 		if (argc > 3)
 			seconds = std::atoi(argv[3]);
 		cfg.on_quota = [](int64_t used) { std::fprintf(stderr, "[quota] %lld units\n", (long long)used); };
-		provider = CreateYouTubeProvider(cfg, &hub);
+		provider = CreateYouTubeProvider(cfg, &emotes);
 	} else {
 		return Usage();
 	}
@@ -84,6 +86,8 @@ int main(int argc, char **argv)
 
 	int sub = hub.Subscribe();
 	long long messages = 0, deletes = 0, clears = 0, statuses = 0, errors = 0, reconnects = 0;
+	long long emote_count = 0;
+	std::string emote_examples;
 	auto t0 = std::chrono::steady_clock::now();
 	provider->Start();
 	auto deadline = t0 + std::chrono::seconds(seconds);
@@ -93,6 +97,11 @@ int main(int argc, char **argv)
 		switch (ev.kind) {
 		case ChatEvent::Kind::Message: {
 			++messages;
+			for (const auto &e : ev.message.emotes) {
+				++emote_count;
+				if (emote_examples.size() < 6)
+					emote_examples += e.source + ":" + e.name + " ";
+			}
 			std::string badges;
 			for (const auto &b : ev.message.badges)
 				badges += (badges.empty() ? "" : ",") + b;
@@ -122,6 +131,9 @@ int main(int argc, char **argv)
 		case ChatEvent::Kind::Quota:
 			std::printf("%7.2f %-7s QUOTA %lld\n", t, PlatformKey(ev.platform), (long long)ev.quota_used);
 			break;
+		case ChatEvent::Kind::ChannelInfo:
+			std::printf("%7.2f %-7s CHANNEL %s\n", t, PlatformKey(ev.platform), ev.target_id.c_str());
+			break;
 		}
 		std::fflush(stdout);
 	};
@@ -142,5 +154,6 @@ int main(int argc, char **argv)
 	std::printf("\nSUMMARY %s: %lld messages, %lld deletes, %lld clears, %lld status events (%lld reconnecting, "
 		    "%lld error), stop took %.2fs\n",
 		    platform.c_str(), messages, deletes, clears, statuses, reconnects, errors, stop_s);
+	std::printf("EMOTES %lld (e.g. %s)\n", emote_count, emote_examples.c_str());
 	return 0;
 }

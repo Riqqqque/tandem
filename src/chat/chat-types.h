@@ -16,6 +16,15 @@ constexpr int kPlatformCount = 3;
 const char *PlatformName(Platform p);    // "Twitch", "Kick", "YouTube"
 const char *PlatformKey(Platform p);     // "twitch", "kick", "youtube"
 
+// An emote inside ChatMessage::text: [begin, end) are UTF-8 byte offsets.
+struct EmoteSpan {
+	size_t begin = 0;
+	size_t end = 0;
+	std::string name;
+	std::string url;  // image URL (PNG, GIF or WebP)
+	std::string source; // "twitch", "kick", "7tv", "bttv", "ffz"
+};
+
 struct ChatMessage {
 	Platform platform = Platform::Twitch;
 	std::string id;           // platform message id (dedupe / deletes)
@@ -24,6 +33,7 @@ struct ChatMessage {
 	std::string color;        // "#RRGGBB" or empty
 	std::vector<std::string> badges; // "broadcaster", "moderator", "subscriber", "vip", "verified", "owner", "member"
 	std::string text;         // plain text; emotes are left as their text form
+	std::vector<EmoteSpan> emotes; // sorted, non-overlapping; empty when there are none
 	int64_t timestamp_ms = 0; // unix epoch milliseconds
 };
 
@@ -38,7 +48,9 @@ struct ProviderStatus {
 
 // Events flowing from providers to consumers. Exactly one payload is meaningful per kind.
 struct ChatEvent {
-	enum class Kind { Message, DeleteMessage, ClearUser, ClearAll, Status, Quota };
+	// ChannelInfo: target_id carries the platform's numeric channel/user id once known, so
+	// third-party emote sets (7TV, BetterTTV, FrankerFaceZ) can be loaded for that channel.
+	enum class Kind { Message, DeleteMessage, ClearUser, ClearAll, Status, Quota, ChannelInfo };
 	Kind kind = Kind::Message;
 	Platform platform = Platform::Twitch;
 	ChatMessage message;      // Message

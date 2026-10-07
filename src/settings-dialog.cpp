@@ -139,11 +139,15 @@ void ShowTandemSettings(QWidget *parent, int tab)
 	startWithStream->setChecked(chat.startWithStream);
 	auto timestamps = new QCheckBox(Text("Chat.ShowTimestamps"), general);
 	timestamps->setChecked(chat.showTimestamps);
+	auto extEmotes = new QCheckBox(Text("Chat.ThirdPartyEmotes"), general);
+	extEmotes->setChecked(chat.thirdPartyEmotes);
+	extEmotes->setToolTip(Text("Chat.ThirdPartyEmotesTip"));
 	auto maxMessages = new QSpinBox(general);
 	maxMessages->setRange(50, 5000);
 	maxMessages->setValue(chat.maxMessages);
 	generalForm->addRow(startWithStream);
 	generalForm->addRow(timestamps);
+	generalForm->addRow(extEmotes);
 	generalForm->addRow(Text("Chat.MaxMessages"), maxMessages);
 	chatLayout->addWidget(general);
 	chatLayout->addStretch(1);
@@ -214,6 +218,7 @@ void ShowTandemSettings(QWidget *parent, int tab)
 	chat.youtubeApiKey = trimmed(apiKey);
 	chat.startWithStream = startWithStream->isChecked();
 	chat.showTimestamps = timestamps->isChecked();
+	chat.thirdPartyEmotes = extEmotes->isChecked();
 	chat.maxMessages = maxMessages->value();
 	chat.overlayEnabled = overlayOn->isChecked();
 	chat.overlayPort = port->value();

@@ -22,6 +22,7 @@ Add them to the URL, for example `http://127.0.0.1:48080/?max=15&fade=30&platfor
 | `icons` | 1 | Show the platform label (`0` to hide) |
 | `ts` | 0 | Show a timestamp (`1` to show) |
 | `badges` | 1 | Show owner/mod/VIP tags |
+| `emotes` | 1 | Show emotes as images (`0` shows their names as text) |
 | `platforms` | all | Only these platforms, e.g. `twitch,youtube` |
 | `font` | 18 | Font size in pixels (8-96) |
 | `theme` | dark | `dark`, `light`, or `none` (no backgrounds or outline) |
@@ -42,6 +43,7 @@ Use the Browser Source's **Custom CSS** box. Stable class names:
 | `.sep` | The `:` after the name |
 | `.text` | Message text |
 | `.time` | Timestamp |
+| `.emote` | Emote image inside the text |
 | `body.theme-dark`, `body.theme-light`, `body.theme-none`, `body.align-right` | Page modes |
 
 Examples:

@@ -8,13 +8,7 @@ project(tandem-overlay-tests CXX)
 set(TANDEM_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 
 if(NOT TARGET tandem-chat-core)
-	# Only the hub is needed here; it also defines the Log/PlatformName helpers.
-	add_library(tandem-chat-core STATIC ${TANDEM_ROOT}/src/chat/chat-hub.cpp)
-	target_include_directories(tandem-chat-core PUBLIC ${TANDEM_ROOT}/src/chat)
-	target_compile_features(tandem-chat-core PUBLIC cxx_std_20)
-	if(MSVC)
-		target_compile_options(tandem-chat-core PRIVATE /utf-8 /W4)
-	endif()
+	include(${TANDEM_ROOT}/src/chat/chat.cmake)
 endif()
 
 include(${TANDEM_ROOT}/src/overlay/overlay.cmake)
@@ -28,6 +22,11 @@ foreach(t test-overlay overlay-demo)
 	endif()
 	if(MSVC)
 		target_compile_options(${t} PRIVATE /utf-8 /W4)
+	endif()
+	if(WIN32 AND TARGET CURL::libcurl_shared)
+		add_custom_command(TARGET ${t} POST_BUILD
+			COMMAND "${CMAKE_COMMAND}" -E copy_if_different "$<TARGET_FILE:CURL::libcurl_shared>" "$<TARGET_FILE_DIR:${t}>"
+			VERBATIM)
 	endif()
 endforeach()
 

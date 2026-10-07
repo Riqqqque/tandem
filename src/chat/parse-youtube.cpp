@@ -379,6 +379,7 @@ std::optional<YouTubeVideoInfo> ParseYouTubeVideosList(std::string_view body)
 	if (!items.is_array() || items.empty())
 		return info;
 	info.found = true;
+	info.channel_id = Str(Child(items[0], "snippet"), "channelId");
 	const json &live = Child(items[0], "liveStreamingDetails");
 	if (!live.is_object())
 		return info;

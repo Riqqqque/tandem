@@ -21,6 +21,8 @@ target_sources(
     "${_tandem_chat_dir}/chat-types.h"
     "${_tandem_chat_dir}/chat-util.cpp"
     "${_tandem_chat_dir}/chat-util.h"
+    "${_tandem_chat_dir}/emotes.cpp"
+    "${_tandem_chat_dir}/emotes.h"
     "${_tandem_chat_dir}/kick-provider.cpp"
     "${_tandem_chat_dir}/net.cpp"
     "${_tandem_chat_dir}/net.h"
@@ -45,7 +47,8 @@ if(PROJECT_VERSION)
 endif()
 
 if(WIN32)
-  target_compile_definitions(tandem-chat-core PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX)
+  # _CRT_SECURE_NO_WARNINGS: read-only getenv for the TANDEM_FORCE_RAW_WS test switch.
+  target_compile_definitions(tandem-chat-core PRIVATE WIN32_LEAN_AND_MEAN NOMINMAX _CRT_SECURE_NO_WARNINGS)
   target_link_libraries(tandem-chat-core PUBLIC ws2_32)
 endif()
 

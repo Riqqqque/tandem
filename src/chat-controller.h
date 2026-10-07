@@ -8,6 +8,7 @@
 #include <obs-frontend-api.h>
 
 #include "chat/chat-hub.h"
+#include "chat/emotes.h"
 #include "output-config.h"
 
 namespace tandem::overlay {
@@ -44,6 +45,9 @@ private:
 	void OnQuota(int64_t used);
 
 	tandem::chat::ChatHub hub_;
+	// Between the providers and the hub: adds 7TV/BTTV/FFZ emotes. Declared after hub_ so it is
+	// destroyed first.
+	tandem::chat::EmoteAnnotator emotes_{&hub_};
 	std::unique_ptr<tandem::chat::ChatProvider> providers_[tandem::chat::kPlatformCount];
 	ChatPlatformConfig applied_[tandem::chat::kPlatformCount];
 	std::string appliedYouTubeKey_;

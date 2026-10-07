@@ -20,6 +20,7 @@ Only when you turn the matching feature on:
 | Twitch chat | `wss://irc-ws.chat.twitch.tv` | Reads public chat anonymously (no login) |
 | Kick chat | `https://kick.com/api/v2/channels/<slug>` and `wss://ws-us2.pusher.com` | Looks up the chat room, then reads public chat (the same feed kick.com uses) |
 | YouTube chat | `https://www.googleapis.com/youtube/v3/...` and `https://youtube.googleapis.com/youtube/v3/liveChat/messages/stream` | Finds the live chat and reads it with your API key, sent in the `X-Goog-Api-Key` header (never in the URL) |
+| Emotes | `7tv.io`, `api.betterttv.net`, `api.frankerfacez.com` (emote lists) and the image servers `static-cdn.jtvnw.net`, `files.kick.com`, `cdn.7tv.app`, `cdn.betterttv.net`, `cdn.frankerfacez.com` | Loads the emote lists for the channels whose chat you read, and the emote images. Can be turned off for 7TV/BetterTTV/FrankerFaceZ in Settings → Chat |
 | Overlay | Listens on `127.0.0.1` only | Serves the overlay page to OBS's Browser Source on the same computer |
 
 Those platforms see the same thing a normal viewer's browser would: your IP address and the channel you open. Their privacy policies apply to that traffic.

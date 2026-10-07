@@ -3,6 +3,7 @@
 
 #include "chat-util.h"
 
+#include <algorithm>
 #include <charconv>
 
 namespace tandem::chat {
@@ -221,6 +222,70 @@ bool ParseInt64(std::string_view s, int64_t &out)
 
 } // namespace
 
+std::vector<EmoteSpan> ParseTwitchEmotes(std::string_view tag, std::string_view text)
+{
+	std::vector<EmoteSpan> out;
+	if (tag.empty() || text.empty())
+		return out;
+
+	// Twitch positions count Unicode code points; map each one to its UTF-8 byte offset.
+	std::vector<size_t> starts;
+	starts.reserve(text.size());
+	for (size_t i = 0; i < text.size(); ++i) {
+		if ((static_cast<unsigned char>(text[i]) & 0xC0) != 0x80)
+			starts.push_back(i);
+	}
+
+	// Format: id:start-end,start-end/id:start-end
+	while (!tag.empty()) {
+		size_t slash = tag.find('/');
+		std::string_view entry = tag.substr(0, slash);
+		size_t colon = entry.find(':');
+		if (colon != std::string_view::npos && colon > 0) {
+			std::string id(entry.substr(0, colon));
+			bool safe_id = true;
+			for (char c : id) {
+				if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_'))
+					safe_id = false;
+			}
+			std::string_view ranges = entry.substr(colon + 1);
+			while (safe_id && !ranges.empty()) {
+				size_t comma = ranges.find(',');
+				std::string_view r = ranges.substr(0, comma);
+				size_t dash = r.find('-');
+				int64_t a = 0, b = 0;
+				if (dash != std::string_view::npos && ParseInt64(r.substr(0, dash), a) &&
+				    ParseInt64(r.substr(dash + 1), b) && a >= 0 && b >= a &&
+				    static_cast<size_t>(b) < starts.size()) {
+					EmoteSpan s;
+					s.begin = starts[static_cast<size_t>(a)];
+					s.end = static_cast<size_t>(b) + 1 < starts.size() ? starts[static_cast<size_t>(b) + 1]
+											   : text.size();
+					s.name = std::string(text.substr(s.begin, s.end - s.begin));
+					s.url = "https://static-cdn.jtvnw.net/emoticons/v2/" + id + "/default/dark/2.0";
+					s.source = "twitch";
+					out.push_back(std::move(s));
+				}
+				if (comma == std::string_view::npos)
+					break;
+				ranges.remove_prefix(comma + 1);
+			}
+		}
+		if (slash == std::string_view::npos)
+			break;
+		tag.remove_prefix(slash + 1);
+	}
+
+	std::sort(out.begin(), out.end(), [](const EmoteSpan &x, const EmoteSpan &y) { return x.begin < y.begin; });
+	// Drop overlaps from malformed tags.
+	std::vector<EmoteSpan> clean;
+	for (auto &s : out) {
+		if (clean.empty() || s.begin >= clean.back().end)
+			clean.push_back(std::move(s));
+	}
+	return clean;
+}
+
 TwitchEvent ParseTwitchLine(std::string_view line, int64_t fallback_now_ms)
 {
 	TwitchEvent ev;
@@ -258,6 +323,8 @@ TwitchEvent ParseTwitchLine(std::string_view line, int64_t fallback_now_ms)
 			ev.action = true;
 		}
 		m.text = std::string(text);
+		m.emotes = ParseTwitchEmotes(tag("emotes"), m.text);
+		ev.room_id = tag("room-id");
 		int64_t ts = 0;
 		m.timestamp_ms = ParseInt64(tag("tmi-sent-ts"), ts) && ts > 0 ? ts : fallback_now_ms;
 		return ev;
@@ -307,6 +374,7 @@ TwitchEvent ParseTwitchLine(std::string_view line, int64_t fallback_now_ms)
 		return ev;
 	}
 	if (cmd == "ROOMSTATE") {
+		ev.room_id = tag("room-id");
 		if (!ev.channel.empty())
 			ev.type = TwitchEvent::Type::RoomState;
 		return ev;

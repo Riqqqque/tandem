@@ -30,6 +30,7 @@ Everything is opt-in. Stream to one platform, two, or all three; read chat from 
 
 **Unified chat**
 - One dock with messages from Twitch, Kick and YouTube, labeled by platform, with author colors, roles and optional timestamps.
+- Emotes as images: Twitch and Kick emotes, plus **7TV, BetterTTV and FrankerFaceZ** emotes (the ones viewers see with those browser extensions).
 - Show/hide each platform, see each platform's connection status at a glance.
 - Read-only. Twitch needs only a channel name, Kick only a channel slug, YouTube your own free API key.
 - Updates are batched, the list is capped (500 messages by default), and all networking runs off OBS's video, audio and UI threads.

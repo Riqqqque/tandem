@@ -19,7 +19,7 @@ The **Tandem Chat** dock shows chat from every platform you enabled, newest at t
 - Messages deleted by moderators disappear from the dock and overlay; a ban or timeout removes that user's messages; a chat clear removes that platform's messages.
 - The dock keeps the newest 500 messages (adjustable from 50 to 5000), so memory stays flat on long streams.
 - Updates are drawn every 100 ms in batches, so a busy chat doesn't slow OBS down. If you scroll up to read, the dock stops auto-scrolling until you scroll back to the bottom.
-- Emotes are shown as their text names.
+- Emotes are shown as images: Twitch emotes (including subscriber emotes), Kick emotes, and 7TV, BetterTTV and FrankerFaceZ emotes. For the last three, Tandem loads the channel's emote sets and the global sets, the same ones viewers see with those browser extensions, so a word like `catJAM` shows as the emote. 7TV covers Twitch, Kick and YouTube channels; BetterTTV and FrankerFaceZ are Twitch-only. Turn the extension emotes off in Settings → Chat if you prefer. Animated emotes show their first frame in the dock and animate in the overlay.
 - Each platform runs on its own connection and thread. If one platform fails, the others keep working.
 - Reconnects use exponential backoff with jitter (1 second up to 1 minute) and only reset after a connection has been healthy for 30 seconds, so a flaky network doesn't cause a reconnect storm. Permanent problems (invalid channel, invalid API key, quota exhausted, chat ended) stop with an error instead of retrying.
 - Chat history from before Tandem connected isn't loaded.

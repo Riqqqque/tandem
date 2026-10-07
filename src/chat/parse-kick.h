@@ -39,6 +39,11 @@ KickEvent ParseKickPusher(std::string_view text, int64_t fallback_now_ms);
 
 // "[emote:12345:Name]" -> "Name"; anything malformed is left untouched.
 std::string StripKickEmotes(std::string_view text);
+// Same, and records each emote as an image span over the returned text.
+std::string StripKickEmotes(std::string_view text, std::vector<EmoteSpan> *spans);
+
+// Reads user_id (used by 7TV) from a https://kick.com/api/v2/channels/<slug> response; empty if absent.
+std::string ParseKickChannelUserId(std::string_view body);
 
 // Slug as in kick.com/<slug>: [A-Za-z0-9_-], 1-64 chars.
 bool IsValidKickSlug(std::string_view slug);

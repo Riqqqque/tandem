@@ -23,6 +23,7 @@ If you used obs-multi-rtmp, its `obs-multi-rtmp.json` (which holds keys in plain
 | Twitch chat is on | `irc-ws.chat.twitch.tv` (secure WebSocket) | Reads public chat anonymously |
 | Kick chat is on | `kick.com` (chat room lookup), `ws-us2.pusher.com` (secure WebSocket) | Reads public chat |
 | YouTube chat is on | `www.googleapis.com`, `youtube.googleapis.com` | Reads live chat with your API key (header only) |
+| Chat is on | 7TV, BetterTTV, FrankerFaceZ APIs and the emote image servers | Loads emote lists and images (extension emotes can be turned off) |
 | Overlay is on | Listens on `127.0.0.1` | Serves the overlay page to your own OBS |
 
 ## Overlay server security

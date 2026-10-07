@@ -39,6 +39,8 @@ protected:
 	void PostClearUser(const std::string &author_id);
 	void PostClearAll();
 	void PostQuota(int64_t used);
+	// Reports the platform's numeric channel/user id (used to load 7TV/BTTV/FFZ emotes).
+	void PostChannelInfo(const std::string &channel_id);
 
 	const char *name() const { return PlatformName(platform_); }
 

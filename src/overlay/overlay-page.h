@@ -19,6 +19,7 @@ URL parameters (all optional):
   icons=1        show the platform label (1/0)
   ts=0           show a timestamp (1/0)
   badges=1       show broadcaster/mod/vip tags (1/0)
+  emotes=1       show emotes as images (Twitch, Kick, 7TV, BetterTTV, FrankerFaceZ)
   platforms=     comma list filter, e.g. twitch,kick (default: all)
   font=18        font size in px (8-96)
   theme=dark     dark | light | none (none = no backgrounds, no outline)
@@ -34,6 +35,7 @@ Stable class names for OBS "Custom CSS":
   .sep                      the ":" after the name
   .text                     message text
   .time                     timestamp (when ts=1)
+  .emote                    emote image inside .text (when emotes=1)
   body.theme-dark / body.theme-light / body.theme-none, body.align-right
 Example: .platform { display: none; }  .msg { background: none; }
 -->
@@ -125,6 +127,7 @@ body.align-right .msg { align-self: flex-end; }
 .author { font-weight: 700; }
 .sep { margin-right: 0.35em; }
 .text { white-space: pre-wrap; }
+.emote { height: 1.75em; vertical-align: middle; margin: -0.25em 0.05em; }
 
 body.theme-dark { color: #fff; }
 body.theme-dark .msg { background: rgba(0, 0, 0, 0.45); }
@@ -163,6 +166,7 @@ body.theme-none .msg { background: none; padding: 1px 0; border-radius: 0; }
 		icons: flag("icons", true),
 		ts: flag("ts", false),
 		badges: flag("badges", true),
+		emotes: flag("emotes", true),
 		font: num("font", 18, 8, 96),
 		theme: (params.get("theme") || "dark").toLowerCase(),
 		align: (params.get("align") || "left").toLowerCase(),
@@ -239,6 +243,30 @@ body.theme-none .msg { background: none; padding: 1px 0; border-radius: 0; }
 		while (chat.children.length > cfg.max) removeNode(chat.firstElementChild);
 	}
 
+	// Message text with emote images. Text always goes in as text nodes, never as HTML.
+	function messageText(m) {
+		var span = el("span", "text");
+		if (!cfg.emotes || !Array.isArray(m.parts)) {
+			span.textContent = String(m.text || "");
+			return span;
+		}
+		m.parts.forEach(function (p) {
+			if (p && typeof p.u === "string" && /^https:\/\//.test(p.u)) {
+				var img = document.createElement("img");
+				img.className = "emote";
+				img.src = p.u;
+				img.alt = String(p.e || "");
+				img.title = String(p.e || "");
+				img.referrerPolicy = "no-referrer";
+				img.onerror = function () { img.replaceWith(document.createTextNode(img.alt)); };
+				span.appendChild(img);
+			} else if (p && typeof p.t === "string") {
+				span.appendChild(document.createTextNode(p.t));
+			}
+		});
+		return span;
+	}
+
 	function addMessage(m) {
 		if (!m || typeof m !== "object") return;
 		var platform = String(m.platform || "");
@@ -272,7 +300,7 @@ body.theme-none .msg { background: none; padding: 1px 0; border-radius: 0; }
 			author.style.color = m.color;
 		row.appendChild(author);
 		row.appendChild(el("span", "sep", ":"));
-		row.appendChild(el("span", "text", m.text || ""));
+		row.appendChild(messageText(m));
 
 		chat.appendChild(row);
 		if (m.id) byKey.set(key, row);

@@ -125,6 +125,17 @@ void ProviderBase::PostQuota(int64_t used)
 	sink_->Post(std::move(ev));
 }
 
+void ProviderBase::PostChannelInfo(const std::string &channel_id)
+{
+	if (channel_id.empty())
+		return;
+	ChatEvent ev;
+	ev.kind = ChatEvent::Kind::ChannelInfo;
+	ev.platform = platform_;
+	ev.target_id = channel_id;
+	sink_->Post(std::move(ev));
+}
+
 std::string RetryText(std::chrono::milliseconds d)
 {
 	long long s = (d.count() + 999) / 1000;

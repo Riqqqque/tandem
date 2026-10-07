@@ -13,7 +13,7 @@ namespace tandem::chat {
 
 namespace {
 
-constexpr const char *kVideosUrl = "https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails&id=";
+constexpr const char *kVideosUrl = "https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,snippet&id=";
 constexpr const char *kSearchUrl = "https://www.googleapis.com/youtube/v3/search?part=id&eventType=live&type=video"
 				   "&maxResults=1&channelId=";
 constexpr const char *kStreamUrl = "https://youtube.googleapis.com/youtube/v3/liveChat/messages/stream";
@@ -245,6 +245,7 @@ std::optional<std::string> YouTubeProvider::ResolveChatId()
 		}
 		if (!info->active_chat_id.empty()) {
 			backoff_.Reset();
+			PostChannelInfo(info->channel_id);
 			Log(LogLevel::Info, "[chat/youtube] video %s -> live chat %s", vid.c_str(),
 			    info->active_chat_id.c_str());
 			return info->active_chat_id;

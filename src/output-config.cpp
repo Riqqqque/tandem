@@ -113,6 +113,7 @@ static nlohmann::json SaveChatConfig(const ChatConfig& c) {
     json["youtube-quota-used"] = c.youtubeQuotaUsed;
     json["start-with-stream"] = c.startWithStream;
     json["show-timestamps"] = c.showTimestamps;
+    json["third-party-emotes"] = c.thirdPartyEmotes;
     json["max-messages"] = c.maxMessages;
     json["overlay-enabled"] = c.overlayEnabled;
     json["overlay-port"] = c.overlayPort;
@@ -147,6 +148,7 @@ static ChatConfig LoadChatConfig(nlohmann::json& root) {
     c.youtubeQuotaUsed = GetJsonField<int64_t>(json, "youtube-quota-used").value_or(0);
     c.startWithStream = GetJsonField<bool>(json, "start-with-stream").value_or(true);
     c.showTimestamps = GetJsonField<bool>(json, "show-timestamps").value_or(false);
+    c.thirdPartyEmotes = GetJsonField<bool>(json, "third-party-emotes").value_or(true);
     c.maxMessages = std::clamp(GetJsonField<int>(json, "max-messages").value_or(500), 50, 5000);
     c.overlayEnabled = GetJsonField<bool>(json, "overlay-enabled").value_or(false);
     c.overlayPort = std::clamp(GetJsonField<int>(json, "overlay-port").value_or(48080), 1024, 65535);

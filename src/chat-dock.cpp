@@ -16,10 +16,17 @@
 #include <QSortFilterProxyModel>
 #include <QStyledItemDelegate>
 #include <QTextDocument>
+#include <QThreadPool>
+
+#include "chat/emotes.h"
+#include "chat/net.h"
 
 #include <deque>
 
 using namespace tandem::chat;
+
+#include <atomic>
+#include <functional>
 
 namespace {
 
@@ -44,6 +51,89 @@ QString FallbackColor(const std::string &name)
 		h = (h ^ c) * 16777619u;
 	return palette[h % (sizeof(palette) / sizeof(*palette))];
 }
+
+// Downloads emote images off the UI thread and keeps them scaled to the chat line height.
+// OBS's Qt has no TLS, so the download goes through the chat core's libcurl helper.
+class EmoteImages : public QObject {
+public:
+	static EmoteImages &Instance()
+	{
+		static EmoteImages instance;
+		return instance;
+	}
+
+	// Returns the image if it is ready; otherwise starts a download and returns a null image.
+	QImage Get(const QString &url, int height)
+	{
+		auto it = cache_.find(url);
+		if (it != cache_.end())
+			return it.value();
+		if (pending_.contains(url) || failed_.contains(url) || !IsTrustedEmoteUrl(tostdu8(url)))
+			return {};
+		if (cache_.size() > 3000)
+			cache_.clear();
+		pending_.insert(url);
+		QPointer<QObject> self(this);
+		std::string u = tostdu8(url);
+		QThreadPool::globalInstance()->start([this, self, url, u, height]() {
+			HttpResponse r = HttpGet(u, {"Accept: image/webp,image/png,image/gif,image/*"}, 15000, &stopping_);
+			QImage img;
+			if (r.error.empty() && r.status == 200)
+				img = QImage::fromData(QByteArray(r.body.data(), (qsizetype)r.body.size()));
+			if (!img.isNull() && img.height() != height)
+				img = img.scaledToHeight(height, Qt::SmoothTransformation);
+			QMetaObject::invokeMethod(
+				this,
+				[this, self, url, img]() {
+					if (!self)
+						return;
+					pending_.remove(url);
+					if (img.isNull())
+						failed_.insert(url);
+					else
+						cache_.insert(url, img);
+					for (auto &cb : listeners_)
+						cb();
+				},
+				Qt::QueuedConnection);
+		});
+		return {};
+	}
+
+	void AddListener(std::function<void()> cb) { listeners_.push_back(std::move(cb)); }
+	void Shutdown() { stopping_ = true; }
+
+private:
+	QHash<QString, QImage> cache_;
+	QSet<QString> pending_;
+	QSet<QString> failed_;
+	std::vector<std::function<void()>> listeners_;
+	std::atomic<bool> stopping_{false};
+};
+
+// A text document that resolves <img src="https://..."> through EmoteImages.
+class EmoteDocument : public QTextDocument {
+public:
+	explicit EmoteDocument(int emoteHeight) : emoteHeight_(emoteHeight) {}
+
+protected:
+	QVariant loadResource(int type, const QUrl &name) override
+	{
+		if (type == QTextDocument::ImageResource && name.scheme() == "https") {
+			QImage img = EmoteImages::Instance().Get(name.toString(), emoteHeight_);
+			if (!img.isNull())
+				return img;
+			// Placeholder until the download finishes, so the line height doesn't jump.
+			QImage blank(emoteHeight_, emoteHeight_, QImage::Format_ARGB32_Premultiplied);
+			blank.fill(Qt::transparent);
+			return blank;
+		}
+		return QTextDocument::loadResource(type, name);
+	}
+
+private:
+	int emoteHeight_;
+};
 
 struct Entry {
 	ChatMessage msg;
@@ -127,6 +217,12 @@ public:
 		}
 	}
 
+	void RefreshAll()
+	{
+		if (!entries_.empty())
+			emit dataChanged(index(0), index((int)entries_.size() - 1));
+	}
+
 	void Clear()
 	{
 		beginResetModel();
@@ -162,9 +258,29 @@ private:
 		}
 		QString color = m.color.empty() ? FallbackColor(m.author) : QString::fromUtf8(m.color.c_str());
 		html += QString("<b style=\"color:%1\">%2</b>: %3")
-				.arg(color.toHtmlEscaped(), QString::fromUtf8(m.author.c_str()).toHtmlEscaped(),
-				     QString::fromUtf8(m.text.c_str()).toHtmlEscaped());
+				.arg(color.toHtmlEscaped(), QString::fromUtf8(m.author.c_str()).toHtmlEscaped(), TextHtml(m));
 		return html;
+	}
+
+	// Message text as HTML: escaped text runs, and <img> for emotes on trusted CDNs.
+	static QString TextHtml(const ChatMessage &m)
+	{
+		QString out;
+		size_t pos = 0;
+		auto text = [&](size_t from, size_t to) {
+			out += QString::fromUtf8(m.text.data() + from, (qsizetype)(to - from)).toHtmlEscaped();
+		};
+		for (const auto &e : m.emotes) {
+			if (e.begin < pos || e.end > m.text.size() || !IsTrustedEmoteUrl(e.url))
+				continue;
+			text(pos, e.begin);
+			out += QString("<img src=\"%1\" title=\"%2\" style=\"vertical-align: middle\">")
+				       .arg(QString::fromUtf8(e.url.c_str()).toHtmlEscaped(),
+					    QString::fromUtf8(e.name.c_str()).toHtmlEscaped());
+			pos = e.end;
+		}
+		text(pos, m.text.size());
+		return out;
 	}
 
 	std::deque<Entry> entries_;
@@ -205,7 +321,7 @@ public:
 		opt.text.clear();
 		opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter, opt.widget);
 
-		QTextDocument doc;
+		EmoteDocument doc(EmoteHeight());
 		Setup(doc, index, option.rect.width());
 		painter->save();
 		painter->translate(option.rect.topLeft() + QPoint(kPad, kPad / 2));
@@ -221,13 +337,15 @@ public:
 		int width = view_->viewport()->width();
 		if (width <= 0)
 			width = option.rect.width();
-		QTextDocument doc;
+		EmoteDocument doc(EmoteHeight());
 		Setup(doc, index, width);
 		return QSize(width, (int)std::ceil(doc.size().height()) + kPad);
 	}
 
 private:
 	static constexpr int kPad = 4;
+
+	int EmoteHeight() const { return (int)(QFontMetrics(view_->font()).height() * 1.6); }
 
 	void Setup(QTextDocument &doc, const QModelIndex &index, int width) const
 	{
@@ -305,6 +423,22 @@ public:
 		buttons->addWidget(settings);
 		layout->addLayout(buttons);
 
+		// Re-layout once emote images arrive (batched, so a burst of downloads costs one pass).
+		QPointer<QWidget> self(this);
+		EmoteImages::Instance().AddListener([this, self]() {
+			if (!self || emoteRefreshPending_)
+				return;
+			emoteRefreshPending_ = true;
+			QTimer::singleShot(150, this, [this]() {
+				emoteRefreshPending_ = false;
+				bool stick = AtBottom();
+				model_.RefreshAll();
+				view_->doItemsLayout();
+				if (stick)
+					ScrollToBottom();
+			});
+		});
+
 		subscription_ = GetChatController().Hub().Subscribe();
 		timer_ = new QTimer(this);
 		timer_->setInterval(100);
@@ -315,7 +449,11 @@ public:
 		UpdateControls();
 	}
 
-	~ChatDock() override { GetChatController().Hub().Unsubscribe(subscription_); }
+	~ChatDock() override
+	{
+		EmoteImages::Instance().Shutdown();
+		GetChatController().Hub().Unsubscribe(subscription_);
+	}
 
 private:
 	void ApplyViewConfig()
@@ -426,6 +564,8 @@ private:
 			case ChatEvent::Kind::Quota:
 				statusChanged = true;
 				break;
+			case ChatEvent::Kind::ChannelInfo:
+				break;
 			}
 		}
 		flush();
@@ -443,6 +583,7 @@ private:
 	QTimer *timer_ = nullptr;
 	int subscription_ = 0;
 	unsigned ticks_ = 0;
+	bool emoteRefreshPending_ = false;
 };
 
 } // namespace

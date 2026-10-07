@@ -4,6 +4,17 @@ All notable changes to Tandem are listed here. Versions follow [semantic version
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-07
+
+### Added
+- **Emotes in chat**, in the dock and in the overlay:
+  - Twitch emotes (global, channel and subscriber emotes) from the chat's own emote data.
+  - Kick emotes.
+  - **7TV, BetterTTV and FrankerFaceZ**: Tandem loads the channel's sets and the global sets, the same ones viewers see with those browser extensions, and shows matching words as images. 7TV works for Twitch, Kick and YouTube channels; BetterTTV and FrankerFaceZ for Twitch.
+  - YouTube emoji show as normal emoji.
+- Setting to turn 7TV/BetterTTV/FrankerFaceZ emotes off (Tandem Chat > Settings), and an `emotes=0` overlay option.
+- Emote images are only loaded from the platforms' and emote services' own image servers; the overlay's Content Security Policy allows only those hosts.
+
 ## [0.2.0] - 2026-10-07
 
 ### Added

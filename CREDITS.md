@@ -48,7 +48,7 @@ No GPLv3-only code is included. The chat providers, the chat dock, the overlay s
 
 ## Trademarks
 
-Tandem is not affiliated with, endorsed by or sponsored by Twitch Interactive, Kick Streaming, Google/YouTube or the OBS Project. Twitch, Kick, YouTube and OBS are trademarks of their respective owners. Tandem shows platform names as plain text labels and does not use platform logos.
+Tandem is not affiliated with, endorsed by or sponsored by Twitch Interactive, Kick Streaming, Google/YouTube, 7TV, BetterTTV, FrankerFaceZ or the OBS Project. Twitch, Kick, YouTube, OBS, 7TV, BetterTTV and FrankerFaceZ are trademarks of their respective owners. Emotes are loaded from those services' public APIs and image servers and belong to their creators. Tandem shows platform names as plain text labels and does not use platform logos.
 
 ---
 

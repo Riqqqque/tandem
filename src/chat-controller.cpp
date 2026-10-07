@@ -103,10 +103,10 @@ void ChatController::StartProvider(int index)
 
 	switch (static_cast<Platform>(index)) {
 	case Platform::Twitch:
-		providers_[index] = CreateTwitchProvider({cfg.channel}, &hub_);
+		providers_[index] = CreateTwitchProvider({cfg.channel}, &emotes_);
 		break;
 	case Platform::Kick:
-		providers_[index] = CreateKickProvider({cfg.channel, cfg.extra}, &hub_);
+		providers_[index] = CreateKickProvider({cfg.channel, cfg.extra}, &emotes_);
 		break;
 	case Platform::YouTube: {
 		auto today = YouTubeQuotaDay();
@@ -122,7 +122,7 @@ void ChatController::StartProvider(int index)
 		yt.on_quota = [](int64_t used) {
 			GetGlobalService().RunInUIThread([used]() { GetChatController().OnQuota(used); });
 		};
-		providers_[index] = CreateYouTubeProvider(std::move(yt), &hub_);
+		providers_[index] = CreateYouTubeProvider(std::move(yt), &emotes_);
 		break;
 	}
 	}
@@ -181,6 +181,7 @@ void ChatController::ApplyConfig()
 	if (shutdown_)
 		return;
 	auto &chat = GlobalMultiOutputConfig().chat;
+	emotes_.SetEnabled(chat.thirdPartyEmotes);
 	if (running_) {
 		for (int i = 0; i < kPlatformCount; ++i) {
 			auto &cfg = PlatformConfig(chat, i);
@@ -254,6 +255,7 @@ void ChatController::Shutdown()
 		return;
 	shutdown_ = true;
 	StopChat();
+	emotes_.Shutdown();
 	if (overlay_)
 		overlay_->Stop();
 }

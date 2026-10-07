@@ -101,6 +101,11 @@ KickEvent Malformed(KickEvent ev, const char *why)
 
 std::string StripKickEmotes(std::string_view text)
 {
+	return StripKickEmotes(text, nullptr);
+}
+
+std::string StripKickEmotes(std::string_view text, std::vector<EmoteSpan> *spans)
+{
 	constexpr std::string_view kOpen = "[emote:";
 	std::string out;
 	out.reserve(text.size());
@@ -122,6 +127,15 @@ std::string StripKickEmotes(std::string_view text)
 			out.append(kOpen);
 			p = q;
 			continue;
+		}
+		if (spans) {
+			EmoteSpan s;
+			s.begin = out.size();
+			s.name = std::string(text.substr(digits + 1, close - digits - 1));
+			s.end = s.begin + s.name.size();
+			s.url = "https://files.kick.com/emotes/" + std::string(text.substr(q, digits - q)) + "/fullsize";
+			s.source = "kick";
+			spans->push_back(std::move(s));
 		}
 		out.append(text.substr(digits + 1, close - digits - 1));
 		p = close + 1;
@@ -161,6 +175,15 @@ std::optional<std::string> ParseKickChannelChatroomId(std::string_view body)
 	if (!IsValidKickChatroomId(id))
 		return std::nullopt;
 	return id;
+}
+
+std::string ParseKickChannelUserId(std::string_view body)
+{
+	json j = json::parse(body, nullptr, false);
+	if (j.is_discarded())
+		return {};
+	std::string id = IdString(Child(j, "user_id"));
+	return IsValidKickChatroomId(id) ? id : std::string(); // same "positive integer" rule
 }
 
 std::string KickSubscribeMessage(const std::string &chatroom_id)
@@ -240,7 +263,7 @@ KickEvent ParseKickPusher(std::string_view text, int64_t fallback_now_ms)
 			const json &content = Child(d, "content");
 			if (!content.is_string())
 				return Malformed(ev, "missing content");
-			m.text = StripKickEmotes(content.get<std::string>());
+			m.text = StripKickEmotes(content.get<std::string>(), &m.emotes);
 			auto ts = ParseIso8601Ms(StrOr(d, "created_at"));
 			m.timestamp_ms = ts ? *ts : fallback_now_ms;
 			ev.type = KickEvent::Type::Message;

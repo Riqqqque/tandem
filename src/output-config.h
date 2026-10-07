@@ -73,6 +73,7 @@ struct ChatConfig {
     int64_t youtubeQuotaUsed = 0;
     bool startWithStream = true;
     bool showTimestamps = false;
+    bool thirdPartyEmotes = true;   // 7TV, BetterTTV, FrankerFaceZ
     int maxMessages = 500;
     bool overlayEnabled = false;
     int overlayPort = 48080;

@@ -75,6 +75,7 @@ struct YouTubeVideoInfo {
 	bool is_live_broadcast = false; // liveStreamingDetails present
 	bool ended = false;            // actualEndTime present
 	std::string active_chat_id;
+	std::string channel_id;        // snippet.channelId, when requested
 };
 std::optional<YouTubeVideoInfo> ParseYouTubeVideosList(std::string_view body);
 

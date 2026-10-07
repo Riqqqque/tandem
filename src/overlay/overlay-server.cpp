@@ -9,6 +9,7 @@
 #include "overlay-page.h"
 
 #include "chat-hub.h"
+#include "emotes.h"
 
 #include <json.hpp>
 
@@ -213,6 +214,22 @@ json MessageJson(const ChatMessage &m)
 	j["color"] = IsHexColor(m.color) ? m.color : std::string();
 	j["badges"] = m.badges;
 	j["text"] = m.text;
+	if (!m.emotes.empty()) {
+		// Text split into runs and emote images, so the page needs no byte/UTF-16 offset math.
+		json parts = json::array();
+		size_t pos = 0;
+		for (const auto &e : m.emotes) {
+			if (e.begin < pos || e.end > m.text.size() || !chat::IsTrustedEmoteUrl(e.url))
+				continue;
+			if (e.begin > pos)
+				parts.push_back({{"t", m.text.substr(pos, e.begin - pos)}});
+			parts.push_back({{"e", e.name}, {"u", e.url}});
+			pos = e.end;
+		}
+		if (pos < m.text.size())
+			parts.push_back({{"t", m.text.substr(pos)}});
+		j["parts"] = parts;
+	}
 	j["ts"] = m.timestamp_ms;
 	return j;
 }
@@ -235,6 +252,7 @@ std::string FormatEvent(const ChatEvent &ev)
 					       {"state", chat::ProviderStateName(ev.status.state)},
 					       {"detail", ev.status.detail}});
 	case ChatEvent::Kind::Quota:
+	case ChatEvent::Kind::ChannelInfo:
 		break;
 	}
 	return {};
@@ -308,8 +326,11 @@ size_t QueryNumber(const std::string &query, const char *key, size_t def, size_t
 	return def;
 }
 
-const char *kCsp = "default-src 'none'; connect-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
-		   "base-uri 'none'; form-action 'none'";
+std::string Csp()
+{
+	return std::string("default-src 'none'; connect-src 'self'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; "
+			   "base-uri 'none'; form-action 'none'; img-src ") + chat::EmoteCspSources();
+}
 
 } // namespace
 
@@ -601,7 +622,7 @@ void OverlayServer::Impl::Serve(socket_t s)
 	}
 
 	if (req.path == "/" || req.path == "/overlay") {
-		std::string extra = std::string("Content-Security-Policy: ") + kCsp + "\r\n";
+		std::string extra = std::string("Content-Security-Policy: ") + Csp() + "\r\n";
 		SendSimple(s, 200, "OK", "text/html; charset=utf-8", kOverlayPage, head_only, extra.c_str());
 		FinishAndClose(s);
 	} else if (req.path == "/health") {
