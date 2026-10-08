@@ -63,7 +63,7 @@ If you used obs-multi-rtmp before, Tandem imports its targets from the same OBS 
 **Simple mode** (the default):
 
 1. In the **Tandem** dock, tick **Stream here** on each platform you want.
-2. Paste each stream key. Optionally tick **Show this chat** and enter your channel name (YouTube also needs your free API key).
+2. Paste each stream key; each card links to the page where the platform shows it ([Twitch](https://dashboard.twitch.tv/settings/stream), [Kick](https://dashboard.kick.com/channel/stream), [YouTube Studio](https://studio.youtube.com/) → Go live). Optionally tick **Show this chat** and enter your channel name (YouTube also needs a free [API key](docs/wiki/Platform-Setup.md#youtube); the settings link to where you get it).
 3. Press **Go Live**.
 
 Tandem picks the best H.264 encoder on your computer (NVIDIA, AMD, Intel or Apple hardware, otherwise x264) and a bitrate that fits your resolution, and every platform shares that one encode. Ticked platforms also go live when you click OBS's own **Start Streaming**.

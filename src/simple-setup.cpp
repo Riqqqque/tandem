@@ -8,6 +8,7 @@
 #include "platforms.h"
 #include "push-widget.h"
 
+#include <QApplication>
 #include <QDesktopServices>
 #include <QFormLayout>
 #include <QLocale>
@@ -141,9 +142,16 @@ private:
 		c.key = MakeSecretEdit(c.streamFields, &keyRow);
 		c.key->setPlaceholderText(Text("Simple.KeyPlaceholder"));
 		c.key->setToolTip(QString::fromUtf8(c.preset->keyHelp));
-		auto keyLabel = new QLabel(Text("Simple.StreamKey") + " (?)", c.streamFields);
-		keyLabel->setToolTip(QString::fromUtf8(c.preset->keyHelp));
-		streamForm->addRow(keyLabel, keyRow);
+		streamForm->addRow(Text("Simple.StreamKey"), keyRow);
+		auto keyHelp = new QLabel(
+			"<small>" +
+				QString::fromStdString(tandem::KeyHelpHtml(*c.preset, tostdu8(Text("Tip.KeyLink")))) +
+				"</small>",
+			c.streamFields);
+		keyHelp->setTextFormat(Qt::RichText);
+		keyHelp->setOpenExternalLinks(true);
+		keyHelp->setWordWrap(true);
+		streamForm->addRow(keyHelp);
 		if (strcmp(c.preset->id, "kick") == 0) {
 			c.server = new QLineEdit(c.streamFields);
 			c.server->setPlaceholderText(QString::fromUtf8(c.preset->server));
@@ -165,7 +173,7 @@ private:
 			chatForm->addRow(Text("Chat.YouTube.ApiKey"), apiRow);
 			c.channel->setPlaceholderText(Text("Simple.YouTubeVideoPlaceholder"));
 			chatForm->addRow(Text("Simple.YouTubeVideo"), c.channel);
-			auto link = new QLabel(Text("Simple.ApiKeyHelp"), c.chatFields);
+			auto link = new QLabel(Text("Chat.YouTube.ApiKeyHelp"), c.chatFields);
 			link->setTextFormat(Qt::RichText);
 			link->setOpenExternalLinks(true);
 			link->setWordWrap(true);
@@ -210,6 +218,7 @@ private:
 		}
 		quality_->setCurrentIndex(std::clamp(global.simpleQuality, 0, 2));
 		loading_ = false;
+		seenRevision_ = MultiOutputConfigRevision();
 		UpdateEncoderLabel();
 	}
 
@@ -219,7 +228,7 @@ private:
 			auto save = [this]() { Apply(); };
 			QObject::connect(c.stream, &QCheckBox::toggled, this, [this, &c](bool on) {
 				c.streamFields->setVisible(on);
-				if (on && c.key->text().isEmpty())
+				if (on && !loading_ && c.key->text().isEmpty())
 					c.key->setFocus();
 				Apply();
 			});
@@ -347,6 +356,7 @@ private:
 		}
 
 		SaveMultiOutputConfig();
+		seenRevision_ = MultiOutputConfigRevision();
 		GetChatController().ApplyConfig();
 		if (host_.changed)
 			host_.changed();
@@ -431,6 +441,10 @@ private:
 
 	void RefreshStatus()
 	{
+		// Settings, Advanced mode or a profile switch changed the config: show it, so Apply
+		// never writes stale card values back. Wait while the user is typing in a card.
+		if (seenRevision_ != MultiOutputConfigRevision() && !isAncestorOf(QApplication::focusWidget()))
+			LoadFromConfig();
 		// Encoder plugins may still be loading when the dock is created.
 		if (!encoderChecked_ && IsFrontendReady()) {
 			encoderChecked_ = true;
@@ -488,6 +502,7 @@ private:
 	QLabel *liveSummary_ = nullptr;
 	QTimer *timer_ = nullptr;
 	bool loading_ = false;
+	uint64_t seenRevision_ = 0;
 	bool startedChat_ = false;
 	bool encoderChecked_ = false;
 	int kbps_ = 0;

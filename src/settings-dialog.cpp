@@ -116,6 +116,11 @@ void ShowTandemSettings(QWidget *parent, int tab)
 		rows[2].extra->setPlaceholderText(Text("Chat.YouTube.ChannelHint"));
 		form->addRow(rows[2].enabled);
 		form->addRow(Text("Chat.YouTube.ApiKey"), keyRow);
+		auto keyHelp = new QLabel(Text("Chat.YouTube.ApiKeyHelp"), gp);
+		keyHelp->setTextFormat(Qt::RichText);
+		keyHelp->setOpenExternalLinks(true);
+		keyHelp->setWordWrap(true);
+		form->addRow(keyHelp);
 		form->addRow(Text("Chat.YouTube.Video"), rows[2].channel);
 		form->addRow(Text("Chat.YouTube.Channel"), rows[2].extra);
 		int64_t used = chat.youtubeQuotaDay == YouTubeQuotaDay() ? chat.youtubeQuotaUsed : 0;

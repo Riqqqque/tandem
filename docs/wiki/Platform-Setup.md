@@ -4,7 +4,7 @@
 
 **Streaming**
 - Preset server: `rtmps://ingest.global-contribute.live-video.net:443/app` (Twitch's global ingest, chooses the nearest server automatically).
-- Stream key: Twitch Creator Dashboard → Settings → Stream → Primary Stream Key. Treat it like a password.
+- Stream key: [dashboard.twitch.tv/settings/stream](https://dashboard.twitch.tv/settings/stream) (Creator Dashboard → Settings → Stream → Primary Stream Key). Treat it like a password.
 - Video codec: H.264. Twitch's regular ingest does not accept HEVC or AV1 over RTMP; Tandem warns if you pick one.
 - **Bandwidth test mode** (target settings): Tandem adds `?bandwidthtest=true` to the key when it connects, so the stream reaches Twitch without being shown to viewers. Turn it off to go live for real.
 
@@ -15,7 +15,7 @@
 
 **Streaming**
 - Preset server: `rtmps://fa723fc1b171.global-contribute.live-video.net:443/app`.
-- Kick shows your own Stream URL and Stream Key in the Creator Dashboard → Settings → Stream URL & Key. If the URL there differs from the preset, paste Kick's URL instead.
+- Kick shows your own Stream URL and Stream Key at [dashboard.kick.com/channel/stream](https://dashboard.kick.com/channel/stream) (Creator Dashboard → Channel → Stream URL & Key). If the URL there differs from the preset, paste Kick's URL instead.
 - Video codec: H.264.
 
 **Chat**
@@ -27,7 +27,7 @@
 
 **Streaming**
 - Preset server: `rtmps://a.rtmps.youtube.com:443/live2`.
-- Stream key: YouTube Studio → Create → Go live → Stream → Stream key.
+- Stream key: [studio.youtube.com](https://studio.youtube.com/) → Create → Go live → Stream → Stream key.
 - YouTube requires a verified channel with live streaming enabled (the first time can take 24 hours).
 
 **Chat**
@@ -35,8 +35,8 @@
 YouTube chat needs a free API key from your own Google account. It takes about five minutes:
 
 1. Open the [Google Cloud console](https://console.cloud.google.com/) and create a project (any name, e.g. "Tandem").
-2. Go to **APIs & Services → Library**, search for **YouTube Data API v3** and click **Enable**.
-3. Go to **APIs & Services → Credentials → Create credentials → API key**.
+2. Go to **APIs & Services → Library**, search for **YouTube Data API v3** and click **Enable** ([direct link](https://console.cloud.google.com/apis/library/youtube.googleapis.com)).
+3. Go to **APIs & Services → Credentials → Create credentials → API key** ([direct link](https://console.cloud.google.com/apis/credentials)).
 4. Recommended: click the new key → **API restrictions → Restrict key → YouTube Data API v3**. This way the key can't be used for anything else.
 5. Copy the key into Tandem: Tandem Chat dock → Settings → YouTube → API key.
 

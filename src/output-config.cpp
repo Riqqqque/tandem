@@ -7,6 +7,7 @@
 #include <filesystem>
 #include <unordered_set>
 #include <algorithm>
+#include <optional>
 #include <util/platform.h>
 #include "json-util.hpp"
 #include "secrets.h"
@@ -17,6 +18,13 @@ MultiOutputConfig& GlobalMultiOutputConfig()
 {
     static MultiOutputConfig instance;
     return instance;
+}
+
+static uint64_t g_configRevision = 0;
+
+uint64_t MultiOutputConfigRevision()
+{
+    return g_configRevision;
 }
 
 
@@ -283,7 +291,7 @@ static AudioEncoderConfigPtr LoadAudioConfig(nlohmann::json& json) {
     return config;
 }
 
-static MultiOutputConfig LoadMultiOutputConfig(const std::string& content) {
+static std::optional<MultiOutputConfig> LoadMultiOutputConfig(const std::string& content) {
     try {
         int target_count = 0, videocfg_count = 0, audiocfg_count = 0;
 
@@ -336,9 +344,14 @@ static MultiOutputConfig LoadMultiOutputConfig(const std::string& content) {
 
         return config;
     }
-    catch(const std::exception& e) {
-        blog(LOG_ERROR, TAG "Fail to parse config json: %s", e.what());
-        return {};
+    catch(const nlohmann::json::parse_error& e) {
+        // Only the position: the parser's message quotes file content, which can include keys.
+        blog(LOG_ERROR, TAG "Config file is not valid JSON (error at byte %zu)", (size_t)e.byte);
+        return std::nullopt;
+    }
+    catch(const std::exception&) {
+        blog(LOG_ERROR, TAG "Config file has an unexpected structure");
+        return std::nullopt;
     }
 }
 
@@ -351,6 +364,7 @@ void SaveMultiOutputConfig() {
         std::string filename = profiledir;
         filename += kConfigFile;
         auto content = SaveMultiOutputConfig(GlobalMultiOutputConfig());
+        ++g_configRevision;
         if (os_quick_write_utf8_file_safe(filename.c_str(), content.c_str(), content.size(), false, "tmp", "bak"))
             blog(LOG_INFO, TAG "Saved config into %s", filename.c_str());
         else
@@ -398,7 +412,21 @@ bool LoadMultiOutputConfig() {
         if (content) {
             std::string text = content;
             bfree(content);
-            GlobalMultiOutputConfig() = LoadMultiOutputConfig(text);
+            auto loaded = LoadMultiOutputConfig(text);
+            ++g_configRevision;
+            if (!loaded) {
+                // Keep the damaged file for the user instead of overwriting it on the next save.
+                GlobalMultiOutputConfig() = {};
+                if (!legacy) {
+                    std::string broken = filename + ".broken";
+                    os_unlink(broken.c_str());
+                    if (os_rename(filename.c_str(), broken.c_str()) == 0)
+                        blog(LOG_WARNING, TAG "Moved the unreadable config to %s; starting with an empty one", broken.c_str());
+                }
+                bfree(profiledir);
+                return false;
+            }
+            GlobalMultiOutputConfig() = std::move(*loaded);
             ret = true;
             blog(LOG_INFO, TAG "Loaded config from %s", legacy ? "obs-multi-rtmp.json (import)" : filename.c_str());
 
@@ -409,6 +437,7 @@ bool LoadMultiOutputConfig() {
                     os_unlink((filename + ".bak").c_str());
             }
         } else {
+            ++g_configRevision;
             blog(LOG_INFO, TAG "No config at %s yet", filename.c_str());
         }
     }

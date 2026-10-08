@@ -180,7 +180,7 @@ class EditOutputWidgetImpl: public EditOutputWidget
             layout_->addWidget(wid_, 0, 0, 1, 1, Qt::AlignTop);
             wid_->SetGeometryChangeCallback(onContentSizeChanged_);
             NotifyContentSizeChanged();
-            obs_data_release(settings);
+            // The properties widget takes over the caller's reference; settings_ holds its own.
         }
 
         void ClearProperties() {
@@ -535,6 +535,8 @@ public:
             }
             sublayout->addWidget(platformHelp_ = new QLabel(container_), 2, 1);
             platformHelp_->setWordWrap(true);
+            platformHelp_->setTextFormat(Qt::RichText);
+            platformHelp_->setOpenExternalLinks(true);
             sublayout->addWidget(bandwidthTest_ = new QCheckBox(obs_module_text("TwitchBandwidthTest"), container_), 3, 1);
             sublayout->addWidget(new QLabel(obs_module_text("Protocol"), container_), 4, 0);
             sublayout->addWidget(protocolSelector_ = new QComboBox(container_), 4, 1);
@@ -729,7 +731,7 @@ public:
     void UpdatePlatformHelp()
     {
         const auto& preset = tandem::FindPlatformPreset(config_->platform);
-        platformHelp_->setText(QString::fromUtf8(preset.keyHelp));
+        platformHelp_->setText(QString::fromStdString(tandem::KeyHelpHtml(preset, obs_module_text("Tip.KeyLink"))));
         bandwidthTest_->setVisible(config_->platform == "twitch");
     }
 

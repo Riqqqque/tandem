@@ -1,7 +1,9 @@
 #include "pch.h"
 #include "helpers.h"
+#include <atomic>
 #include <cmath>
 #include <deque>
+#include <map>
 #include <regex>
 #include <optional>
 #include <tuple>
@@ -99,6 +101,20 @@ public:
 };
 
 
+// Views that feed a video config's "output scene" into its encoder. Targets that share the
+// encoder share the view, so it is destroyed only when the last of them lets go; destroying
+// it earlier would close the video the encoder is still reading. UI thread only.
+namespace {
+struct SharedSceneView {
+    obs_view_t* view = nullptr;
+    int refs = 0;
+};
+std::map<obs_encoder_t*, SharedSceneView>& SceneViews() {
+    static std::map<obs_encoder_t*, SharedSceneView> views;
+    return views;
+}
+}
+
 static double EncoderSettingsKbps(obs_encoder_t* enc) {
     if (!enc)
         return 0;
@@ -166,7 +182,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
     obs_output_t* output_ = 0;
     bool using_main_video_encoder_ = false;
     bool using_main_audio_encoder_ = false;
-    obs_view_t* scene_view_ = 0;
+    obs_encoder_t* scene_view_key_ = nullptr; // entry in SceneViews() this target holds
     bool isUseDelay_ = false;
     // Set from obs_output_start until the output is active or stopped. libobs only
     // reports an output as active once it has connected, so without this a target
@@ -174,7 +190,7 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
     bool starting_ = false;
     bool reconnecting_ = false;
     // Generation of the current output; queued callbacks from an older output are ignored.
-    uint64_t startGeneration_ = 0;
+    std::atomic<uint64_t> startGeneration_ = 0; // bumped on the UI thread, read from output signals
     // Reconnects that followed a connection lasting under kQuickDropSeconds.
     std::deque<clock::time_point> quickDrops_;
     bool stoppedForLoop_ = false;
@@ -261,7 +277,15 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
                 blog(LOG_ERROR, TAG "Prepare output scene before encoder is created.");
                 return false;
             }
-            if (!obs_encoder_active(venc)) {
+            if (obs_encoder_active(venc)) {
+                // Another target is already encoding with it; keep its scene view alive for us too.
+                ReleaseOutputSceneView();
+                auto it = SceneViews().find(venc);
+                if (it != SceneViews().end()) {
+                    ++it->second.refs;
+                    scene_view_key_ = venc;
+                }
+            } else {
                 auto videoConfig = FindById(GlobalMultiOutputConfig().videoConfig, config_->videoConfig.value_or(""));
 
                 if (!videoConfig || !videoConfig->outputScene.has_value()) {
@@ -275,10 +299,18 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
                     }
                     ReleaseOutputSceneView();
 
-                    scene_view_ = obs_view_create();
-                    obs_view_set_source(scene_view_, 0, scene);
+                    auto& shared = SceneViews()[venc];
+                    if (shared.view) {
+                        // The encoder is idle, so nothing reads the old view; a target that
+                        // has not released it yet keeps its count on the new one.
+                        DestroySceneView(shared.view);
+                    }
+                    shared.view = obs_view_create();
+                    ++shared.refs; // a stopped target may still hold the old entry
+                    scene_view_key_ = venc;
+                    obs_view_set_source(shared.view, 0, scene);
                     obs_source_inc_active(scene);
-                    auto scene_video = obs_view_add(scene_view_);
+                    auto scene_video = obs_view_add(shared.view);
                     obs_encoder_set_video(venc, scene_video);
                 }
             }
@@ -300,19 +332,29 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
     }
 
 
-    bool ReleaseOutputSceneView() {
-        if (!scene_view_)
-            return true;
-
-        obs_view_remove(scene_view_);
-        OBSSourceAutoRelease source = obs_view_get_source(scene_view_, 0);
+    static void DestroySceneView(obs_view_t* view) {
+        obs_view_remove(view);
+        OBSSourceAutoRelease source = obs_view_get_source(view, 0);
         if (source) {
             obs_source_dec_active(source);
         }
-        obs_view_set_source(scene_view_, 0, nullptr);
-        obs_view_destroy(scene_view_);
-        scene_view_ = nullptr;
+        obs_view_set_source(view, 0, nullptr);
+        obs_view_destroy(view);
+    }
 
+    bool ReleaseOutputSceneView() {
+        if (!scene_view_key_)
+            return true;
+
+        auto it = SceneViews().find(scene_view_key_);
+        scene_view_key_ = nullptr;
+        if (it == SceneViews().end())
+            return true;
+        if (--it->second.refs <= 0) {
+            if (it->second.view)
+                DestroySceneView(it->second.view);
+            SceneViews().erase(it);
+        }
         return true;
     }
 
@@ -551,12 +593,22 @@ class PushWidgetImpl : public PushWidget, public IOBSOutputEventHanlder
         if (obs_output_active(output_) || starting_ || reconnecting_)
             obs_output_force_stop(output_);
 
+        obs_service_t* lingeringService = nullptr;
         if (!obs_output_active(output_)) {
             ReleaseOutputService();
             ReleaseOutputEncoder();
+        } else {
+            // Still winding down: the output keeps using its service until it is destroyed.
+            lingeringService = obs_output_get_service(output_);
         }
+        OBSWeakOutputAutoRelease weak = obs_output_get_weak_output(output_);
         obs_output_release(output_);
         output_ = nullptr;
+        if (lingeringService) {
+            OBSOutputAutoRelease still = obs_weak_output_get_output(weak);
+            if (!still)
+                obs_service_release(lingeringService); // the output is gone; drop our reference
+        }
         starting_ = false;
         reconnecting_ = false;
 
@@ -975,7 +1027,7 @@ public:
     {
         QPointer<QObject> guard(this);
         auto self = this;
-        auto generation = startGeneration_;
+        uint64_t generation = startGeneration_.load();
         GetGlobalService().RunInUIThread([guard, self, generation, fn = std::forward<F>(fn)]() {
             if (!guard || generation != self->startGeneration_)
                 return;

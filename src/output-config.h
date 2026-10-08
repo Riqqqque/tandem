@@ -115,4 +115,7 @@ void SaveMultiOutputConfig();
 
 bool LoadMultiOutputConfig();
 
+// Goes up on every load and save, so views can notice changes made elsewhere.
+uint64_t MultiOutputConfigRevision();
+
 std::string GenerateId(MultiOutputConfig& config);

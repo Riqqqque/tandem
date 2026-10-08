@@ -4,6 +4,19 @@ All notable changes to Tandem are listed here. Versions follow [semantic version
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-10-08
+
+### Added
+- Links to the page where each platform shows its stream key, next to every key field: Simple mode cards, the target editor, and the wiki. The YouTube chat settings link to the step-by-step API key guide and straight to the Google Cloud pages that enable the API and create the key.
+
+### Fixed
+- Simple mode no longer writes old values back over changes made in Settings or Advanced mode (for example a chat channel or YouTube key set in Settings was reset the next time a Simple card changed).
+- The target editor released its settings object one time too many, which could corrupt memory after changing the platform or protocol and closing the dialog (inherited from obs-multi-rtmp).
+- Two targets sharing a video encoder with its own output scene: stopping the first one no longer cuts off the scene the second one is still streaming (inherited from obs-multi-rtmp).
+- A damaged `tandem.json` is kept as `tandem.json.broken` instead of being replaced by an empty config on the next save, and the log no longer quotes file content from it.
+- The stream service object (which holds the key) is released when a target is deleted or OBS closes while that target is still stopping.
+- Kick's stream key is under Creator Dashboard > Channel > Stream URL & Key; the help text and wiki said Settings.
+
 ## [0.3.0] - 2026-10-07
 
 ### Added
