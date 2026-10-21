@@ -108,7 +108,7 @@ function Package {
 
     Push-Location -Stack BuildTemp
     Ensure-Location -Path "${ProjectRoot}/release"
-    Invoke-External "makensis.exe" "/DPLUGIN_SOURCE_DIR=${InstallerSource}" ${NsiFile}
+    Invoke-External "makensis.exe" "/DPLUGIN_SOURCE_DIR=${InstallerSource}" "/DVERSION=${ProductVersion}" ${NsiFile}
     Copy-Item -Path "${ProjectRoot}/tandem-setup.exe" -Destination "${OutputName}-Installer.exe"
     Pop-Location -Stack BuildTemp
 

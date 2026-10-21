@@ -49,10 +49,15 @@ Everything is opt-in. Stream to one platform, two, or all three; read chat from 
 
 ## Install
 
-1. Close OBS.
-2. Download the latest release and check its SHA-256 against the value on the release page.
-3. Windows: run `tandem-*-windows-x64-Installer.exe`, or extract the `.zip` into your OBS folder (usually `C:\Program Files\obs-studio`).
-4. Start OBS. The **Tandem** and **Tandem Chat** docks open the first time; later you can find them under **Docks**.
+**Windows:** [**Download the installer**](https://github.com/Riqqqque/tandem/releases/latest/download/tandem-windows-installer.exe), double-click it, click **Install**, then **Finish** (it starts OBS for you). That's it.
+
+- If Windows shows "Windows protected your PC", click **More info** → **Run anyway**. The installer isn't code-signed yet; the [release page](https://github.com/Riqqqque/tandem/releases/latest) lists its SHA-256 if you want to check it.
+- If OBS is open, the installer asks you to close it first.
+- To update, run the newest installer. To remove Tandem, use Windows **Settings → Apps → Installed apps → Tandem for OBS Studio**.
+
+**Mac:** [download `tandem-macos.pkg`](https://github.com/Riqqqque/tandem/releases/latest/download/tandem-macos.pkg). **Linux:** see the [install guide](docs/wiki/Installation.md).
+
+After OBS starts, the **Tandem** and **Tandem Chat** docks open on their own the first time; later you find them under **Docks**.
 
 If you used obs-multi-rtmp before, Tandem imports its targets from the same OBS profile on first start (the old file is left untouched). Remove obs-multi-rtmp afterwards so you don't run both.
 

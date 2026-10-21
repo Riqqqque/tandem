@@ -4,6 +4,14 @@ All notable changes to Tandem are listed here. Versions follow [semantic version
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-10-21
+
+### Changed
+- Simpler Windows installer: a welcome page with one **Install** button, then a finish page that can start OBS and open the quick start guide. No folder to pick.
+- The installer asks you to close OBS if it is open, and warns if OBS isn't installed or is older than 32.2.
+- Updating replaces the old files cleanly; Tandem now shows up in Windows **Settings > Apps > Installed apps**, which is where you remove it.
+- Every release has fixed-name downloads (`tandem-windows-installer.exe`, `tandem-macos.pkg`), so the README links straight to the newest installer, and the release page starts with a "Which file do I download?" table.
+
 ## [0.3.1] - 2026-10-08
 
 ### Added

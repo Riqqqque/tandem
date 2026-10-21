@@ -1,28 +1,32 @@
 # Installation
 
-Close OBS before installing or updating.
+## Windows (the easy way)
 
-## Download and verify
+1. [**Download the installer**](https://github.com/Riqqqque/tandem/releases/latest/download/tandem-windows-installer.exe) (always the newest version).
+2. Double-click it. If Windows shows "Windows protected your PC", click **More info** → **Run anyway** (the installer isn't code-signed yet).
+3. Click **Install**, then **Finish**. Leave **Start OBS now** ticked and OBS opens with the Tandem docks.
 
-Download from the [Releases](https://github.com/Riqqqque/tandem/releases) page. Every release lists the SHA-256 checksum of each file. Check yours before running it:
+The installer:
+- needs no administrator rights and installs into `C:\ProgramData\obs-studio\plugins\tandem`, where OBS finds plugins for every user;
+- asks you to close OBS if it's open, and warns if OBS isn't installed or is older than 32.2;
+- updates an existing Tandem in place (your settings and keys are kept);
+- adds **Tandem for OBS Studio** to Windows **Settings → Apps → Installed apps**, which is where you remove it.
 
-- Windows (PowerShell): `Get-FileHash .\tandem-0.1.0-windows-x64-Installer.exe -Algorithm SHA256`
-- macOS: `shasum -a 256 tandem-0.1.0-macos-universal.pkg`
-- Linux: `sha256sum tandem-0.1.0-x86_64-linux-gnu-ubuntu-24.04.deb`
+**Zip instead of the installer:** extract `tandem-<version>-windows-x64.zip` into your OBS folder (usually `C:\Program Files\obs-studio`) so that `obs-plugins\64bit\tandem.dll` and `data\obs-plugins\tandem\` land next to OBS's own plugins. Close OBS first.
 
-The hash must match the one on the release page exactly. Release files are built by GitHub Actions from the tagged source.
+## Checking a download (optional)
 
-## Windows
+Every [release](https://github.com/Riqqqque/tandem/releases) lists the SHA-256 checksum of each file. Release files are built by GitHub Actions from the tagged source. To check yours:
 
-**Installer:** run `tandem-<version>-windows-x64-Installer.exe`. It installs into `C:\ProgramData\obs-studio\plugins\tandem` (for all users, no admin needed). Running it again offers to update or remove Tandem; removal only deletes Tandem's own folder.
+- Windows (PowerShell): `Get-FileHash .\tandem-windows-installer.exe -Algorithm SHA256`
+- macOS: `shasum -a 256 tandem-macos.pkg`
+- Linux: `sha256sum tandem-<version>-x86_64-linux-gnu-ubuntu-24.04.deb`
 
-**Zip:** extract `tandem-<version>-windows-x64.zip` into your OBS folder (usually `C:\Program Files\obs-studio`) so that `obs-plugins\64bit\tandem.dll` and `data\obs-plugins\tandem\` land next to OBS's own plugins.
-
-Windows SmartScreen or an antivirus may warn about a new, unsigned plugin. See [Troubleshooting](Troubleshooting.md#antivirus-warnings).
+The hash must match the one on the release page exactly. If an antivirus warns about the new, unsigned plugin, see [Troubleshooting](Troubleshooting.md#antivirus-warnings).
 
 ## macOS
 
-Run the `.pkg`. It installs into `~/Library/Application Support/obs-studio/plugins`. On first start macOS may ask you to allow the plugin in System Settings → Privacy & Security.
+[Download `tandem-macos.pkg`](https://github.com/Riqqqque/tandem/releases/latest/download/tandem-macos.pkg) and open it. It installs into `~/Library/Application Support/obs-studio/plugins`. On first start macOS may ask you to allow the plugin in System Settings → Privacy & Security.
 
 Current status: the macOS build is produced by CI but has not been tested on a Mac yet. Stream keys are stored in the OBS profile folder on macOS (Keychain support is planned).
 
@@ -39,5 +43,5 @@ Tandem reads `obs-multi-rtmp.json` from each OBS profile the first time it start
 
 ## Uninstall
 
-- Windows: run the installer again and choose **No = remove**, or delete `C:\ProgramData\obs-studio\plugins\tandem`.
+- Windows: **Settings → Apps → Installed apps → Tandem for OBS Studio → Uninstall**. (Installed with Tandem 0.3.1 or older? Run the newest installer once so it shows up there, or delete `C:\ProgramData\obs-studio\plugins\tandem`.)
 - Settings stay in each OBS profile as `tandem.json`; stored keys stay in Credential Manager under `Tandem/`. See [Privacy and security](Privacy-and-Security.md) to remove them.
