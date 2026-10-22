@@ -4,6 +4,16 @@ All notable changes to Tandem are listed here. Versions follow [semantic version
 
 ## [Unreleased]
 
+## [0.3.3] - 2026-10-21
+
+### Changed
+- **YouTube chat no longer needs an API key.** Enter your channel (`@handle` or channel link) and Tandem reads the same public chat youtube.com shows next to your stream. It connects by itself when you go live and moves on to your next stream after one ends. No Google Cloud project, no quota.
+- The official YouTube Data API is still there as an option, under **Use the official YouTube API instead** in the chat settings, with step-by-step instructions and direct links. With a key, finding your live stream now uses your channel's public page instead of a 100-unit search.
+- YouTube takes one field for everything: handle, channel link, channel ID or a live video link. The old separate channel ID field is folded in.
+- The chat dock says what's going on instead of "idle": **needs a channel**, **starts when you go live**, **not started** or **waiting for live**, and hovering explains what to do.
+- Turning chat on while OBS is already streaming starts it right away.
+- YouTube channel (member) emoji show as images.
+
 ## [0.3.2] - 2026-10-21
 
 ### Changed

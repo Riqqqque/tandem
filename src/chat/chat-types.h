@@ -37,7 +37,8 @@ struct ChatMessage {
 	int64_t timestamp_ms = 0; // unix epoch milliseconds
 };
 
-enum class ProviderState { Stopped, Connecting, Connected, Reconnecting, Error };
+// Waiting: set up correctly, but there is nothing to read yet (e.g. the YouTube channel isn't live).
+enum class ProviderState { Stopped, Connecting, Connected, Reconnecting, Error, Waiting };
 
 const char *ProviderStateName(ProviderState s);
 
@@ -87,8 +88,7 @@ struct KickChatConfig {
 
 struct YouTubeChatConfig {
 	std::string api_key;       // user's own Data API v3 key; sent only in X-Goog-Api-Key
-	std::string video;         // video id or URL (preferred)
-	std::string channel_id;    // used only when video is empty (costs a search call)
+	std::string target;        // what the user typed: channel (@handle, link, UC...) or a live video
 	int64_t quota_used_today = 0;           // carried over across restarts on the same day
 	std::function<void(int64_t)> on_quota;  // called with the new running total (any thread)
 };
@@ -101,6 +101,10 @@ void Log(LogLevel level, const char *fmt, ...);
 
 std::unique_ptr<ChatProvider> CreateTwitchProvider(TwitchChatConfig cfg, ChatSink *sink);
 std::unique_ptr<ChatProvider> CreateKickProvider(KickChatConfig cfg, ChatSink *sink);
+// Uses the official Data API when cfg.api_key is set, otherwise youtube.com's public web chat
+// (no key, no quota).
 std::unique_ptr<ChatProvider> CreateYouTubeProvider(YouTubeChatConfig cfg, ChatSink *sink);
+// The keyless provider on its own: a channel (@handle, link, UC...) or a live video (link or id).
+std::unique_ptr<ChatProvider> CreateYouTubeWebProvider(const std::string &channel_or_video, ChatSink *sink);
 
 } // namespace tandem::chat

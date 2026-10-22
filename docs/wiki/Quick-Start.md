@@ -9,7 +9,7 @@ The **Tandem** dock has two modes, switched at the top: **Simple** for "pick pla
 1. Tick **Stream here** on each platform you want: Twitch, Kick, YouTube. The stream key field appears.
 2. Paste the stream key. Each card has a link to the page where that platform shows it ([Twitch](https://dashboard.twitch.tv/settings/stream), [Kick](https://dashboard.kick.com/channel/stream), [YouTube Studio](https://studio.youtube.com/) → Go live). [Details](Platform-Setup.md).
    - Kick gives each account its own server URL; if the one in your Kick dashboard differs from the default, paste it into **Server URL**.
-3. Optional: tick **Show this chat in Tandem Chat** and enter the channel name. For YouTube, paste your free [API key](Platform-Setup.md#youtube) and the link of your live video (or your channel ID).
+3. Optional: tick **Show this chat in Tandem Chat** and enter your channel: the name for Twitch and Kick, your `@handle` for YouTube. No API keys or logins.
 4. Press **Go Live**. The button turns red while you're live and shows which platforms are on. Press it again to stop.
 
 **What Tandem chooses for you**

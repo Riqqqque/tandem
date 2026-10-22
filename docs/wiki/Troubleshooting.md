@@ -51,9 +51,13 @@ New, unsigned plugin files are sometimes flagged by antivirus heuristics. Downlo
 
 | Status | What to do |
 |---|---|
-| YouTube API key is not valid | Copy the key again; make sure the YouTube Data API v3 is enabled for that project |
-| Waiting for the stream to go live | Normal before you go live; Tandem checks every minute |
-| YouTube API quota exhausted for today | The free daily quota is used up; it resets at midnight Pacific time. Use the video URL instead of a channel ID, and avoid restarting chat repeatedly |
+| waiting for live / "@name isn't live yet" | Normal before you go live. Tandem checks your channel every 30 seconds and connects by itself |
+| YouTube channel @name was not found | Check the handle on your channel page (it starts with `@`), or paste your channel link |
+| Chat is disabled for this live stream | Chat is turned off for that stream in YouTube Studio, or the video isn't live |
+| Couldn't reach YouTube | Network problem or YouTube is busy; Tandem retries by itself |
+| Messages stopped after a YouTube update | The keyless chat reads youtube.com's own web chat, which YouTube can change. Check for a Tandem update, or turn on the [official API](Platform-Setup.md#optional-official-youtube-api-key) |
+| YouTube API key is not valid (API mode) | Copy the key again; make sure the YouTube Data API v3 is enabled for that project |
+| YouTube API quota exhausted for today (API mode) | The free daily quota is used up; it resets at midnight Pacific time. Untick the API box to use the keyless chat meanwhile |
 | YouTube Data API v3 is not enabled for this key's Google Cloud project | Enable the API under APIs & Services → Library |
 | YouTube API key is restricted and cannot call the YouTube Data API | Edit the key's API restrictions to allow YouTube Data API v3 |
 | Live chat has ended / This live stream has ended | The broadcast ended, or chat was turned off for it |

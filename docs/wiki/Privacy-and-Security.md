@@ -7,7 +7,7 @@
 | Data | Windows | macOS / Linux |
 |---|---|---|
 | Stream keys, stream passwords, WHIP tokens | Windows Credential Manager (`Tandem/target/<id>/...`) | `tandem.json` in the OBS profile folder |
-| YouTube API key | Windows Credential Manager (`Tandem/chat/youtube/api-key`) | `tandem.json` in the OBS profile folder |
+| YouTube API key (optional) | Windows Credential Manager (`Tandem/chat/youtube/api-key`) | `tandem.json` in the OBS profile folder |
 | Settings | `tandem.json` in each OBS profile folder | same |
 | Chat messages | Memory only, never saved | same |
 
@@ -22,7 +22,8 @@ If you used obs-multi-rtmp, its `obs-multi-rtmp.json` (which holds keys in plain
 | A target is streaming | The server URL you set | Sends the stream |
 | Twitch chat is on | `irc-ws.chat.twitch.tv` (secure WebSocket) | Reads public chat anonymously |
 | Kick chat is on | `kick.com` (chat room lookup), `ws-us2.pusher.com` (secure WebSocket) | Reads public chat |
-| YouTube chat is on | `www.googleapis.com`, `youtube.googleapis.com` | Reads live chat with your API key (header only) |
+| YouTube chat is on | `www.youtube.com` | Finds your live stream and reads its public chat like a logged-out viewer (no cookies or keys) |
+| YouTube chat with the optional API key | `www.googleapis.com`, `youtube.googleapis.com` | Reads live chat with your API key (header only) |
 | Chat is on | 7TV, BetterTTV, FrankerFaceZ APIs and the emote image servers | Loads emote lists and images (extension emotes can be turned off) |
 | Overlay is on | Listens on `127.0.0.1` | Serves the overlay page to your own OBS |
 

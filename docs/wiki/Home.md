@@ -25,7 +25,7 @@ Tandem is an OBS Studio plugin that streams the same program to Twitch, Kick and
 
 1. [Installation](Installation.md)
 2. [Quick start](Quick-Start.md)
-3. [Platform setup](Platform-Setup.md): Twitch, Kick, YouTube (API key and quota)
+3. [Platform setup](Platform-Setup.md): Twitch, Kick, YouTube (stream keys and chat)
 4. [Unified chat dock](Unified-Chat-Dock.md)
 5. [Chat overlay](Chat-Overlay.md)
 6. [Bandwidth and performance](Bandwidth-and-Performance.md)

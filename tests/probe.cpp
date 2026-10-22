@@ -2,7 +2,7 @@
 // Tandem - manual live check for the chat providers.
 //   tandem-chat-probe twitch <channel> [seconds]
 //   tandem-chat-probe kick <slug> [chatroomId] [seconds]
-//   tandem-chat-probe youtube <video id or URL> [seconds]   (key from env TANDEM_YT_KEY)
+//   tandem-chat-probe youtube <@handle, channel or video> [seconds]   (optional API key: env TANDEM_YT_KEY)
 #include "chat-hub.h"
 #include "emotes.h"
 
@@ -37,7 +37,7 @@ int Usage()
 {
 	std::fprintf(stderr, "usage: tandem-chat-probe twitch <channel> [seconds]\n"
 			     "       tandem-chat-probe kick <slug> [chatroomId] [seconds]\n"
-			     "       tandem-chat-probe youtube <video> [seconds]   (API key from TANDEM_YT_KEY)\n");
+			     "       tandem-chat-probe youtube <@handle, channel or video> [seconds]   (optional API key: TANDEM_YT_KEY)\n");
 	return 2;
 }
 
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
 		YouTubeChatConfig cfg;
 		const char *key = std::getenv("TANDEM_YT_KEY");
 		cfg.api_key = key ? key : "";
-		cfg.video = argv[2];
+		cfg.target = argv[2];
 		if (argc > 3)
 			seconds = std::atoi(argv[3]);
 		cfg.on_quota = [](int64_t used) { std::fprintf(stderr, "[quota] %lld units\n", (long long)used); };

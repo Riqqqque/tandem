@@ -32,32 +32,40 @@
 
 **Chat**
 
-YouTube chat needs a free API key from your own Google account. It takes about five minutes:
+**Just enter your channel.** No API key, no Google Cloud, no login:
 
-1. Open the [Google Cloud console](https://console.cloud.google.com/) and create a project (any name, e.g. "Tandem").
-2. Go to **APIs & Services → Library**, search for **YouTube Data API v3** and click **Enable** ([direct link](https://console.cloud.google.com/apis/library/youtube.googleapis.com)).
-3. Go to **APIs & Services → Credentials → Create credentials → API key** ([direct link](https://console.cloud.google.com/apis/credentials)).
-4. Recommended: click the new key → **API restrictions → Restrict key → YouTube Data API v3**. This way the key can't be used for anything else.
-5. Copy the key into Tandem: Tandem Chat dock → Settings → YouTube → API key.
+1. Tandem Chat dock → **Settings** → **YouTube** (or the YouTube card in Simple mode).
+2. Tick **Read chat** (**Show this chat** in Simple mode).
+3. In **Channel**, type your handle, for example `@yourname`, or paste your channel link (`youtube.com/@yourname`).
 
-Then enter your live video: the URL (`youtube.com/watch?v=...`, `youtube.com/live/...`, `youtu.be/...`) or the 11-character video ID. Entering a channel ID (`UC...`) instead also works, but finding the live video that way is expensive (see quota below), so prefer the video URL.
+That's all. Tandem watches the channel and connects to the chat by itself whenever you go live, and picks up the next stream after one ends. Until then the dock shows **YouTube: waiting for live**. A link to one live video (`youtube.com/watch?v=...`, `youtube.com/live/...`, `youtu.be/...`) also works if you only want that stream.
 
-If the stream isn't live yet, Tandem waits and checks again every minute (every 5 minutes for a channel ID).
+Why your stream key isn't enough: the stream key only lets OBS *send* video to YouTube. It can't be used to read anything back, including chat.
 
-**Quota, in plain words**
+How it works: Tandem reads the same public chat that youtube.com shows next to your stream, like a logged-out viewer. It asks for the newest messages every 1 to 5 seconds (faster when chat is busy) and shows each message once. Like Kick's chat feed, this is not an official API, so YouTube could change it; if YouTube chat stops working after a YouTube update, check for a Tandem update or use the official API below.
 
-Google gives each project 10,000 "units" per day for free. Reading chat uses some of them:
+### Optional: official YouTube API key
+
+Most people don't need this. Use it only if the normal YouTube chat stops working for you. It uses Google's official YouTube Data API with a free key from your own Google account and takes about five minutes:
+
+1. Sign in to the [Google Cloud console](https://console.cloud.google.com/) with your Google account. The first time, accept the terms. No payment details are needed.
+2. Create a project: open [Create project](https://console.cloud.google.com/projectcreate), name it `Tandem`, click **Create**, and wait until the notification says it's ready. Make sure the project picker at the top shows **Tandem**.
+3. Turn on the YouTube API: open [YouTube Data API v3](https://console.cloud.google.com/apis/library/youtube.googleapis.com) and click **Enable**.
+4. Create the key: open [Credentials](https://console.cloud.google.com/apis/credentials), click **+ Create credentials** → **API key**. Copy the key that appears (it starts with `AIza`).
+5. Lock it down (recommended): in the same list click the key's name → under **API restrictions** pick **Restrict key** → tick **YouTube Data API v3** → **Save**. Now the key can't be used for anything else.
+6. In Tandem: Tandem Chat dock → **Settings** → **YouTube** → tick **Use the official YouTube API instead** → paste the key → **OK**.
+
+Your **Channel** entry stays the same. Tandem still finds your live stream through youtube.com (free), then reads the chat through the API.
+
+**Quota, in plain words.** Google gives each project 10,000 free "units" per day. Tandem uses:
 
 | What | Estimated cost |
 |---|---|
-| Finding the chat of a video | 1 unit |
-| Finding the live video of a channel | 100 units (and at most 100 searches per day) |
+| Finding the chat of your live video | 1 unit |
 | Opening the live chat stream | about 5 units per (re)connect |
 | Each poll, if streaming isn't available | about 5 units |
 
-Tandem uses YouTube's streaming chat connection when it can, which is far cheaper than polling. The settings dialog shows an estimate of today's use. The count resets at midnight Pacific time, when Google resets it. If the quota does run out, YouTube chat stops with "YouTube API quota exhausted for today"; the other platforms and your stream keep going. You can check real usage under APIs & Services → YouTube Data API v3 → Quotas in the Google Cloud console.
-
-The key is sent only in a request header to Google's servers, never in a URL, and never written to the log.
+A normal day of streaming uses a small part of that. The settings show an estimate of today's use, which resets at midnight Pacific time, when Google resets it. If the quota runs out, YouTube chat stops with "YouTube API quota exhausted for today"; untick the API box to go back to the keyless chat. The key is sent only in a request header to Google's servers, never in a URL, and never written to the log. Unticking the box deletes the key from Windows Credential Manager.
 
 ## Custom servers
 

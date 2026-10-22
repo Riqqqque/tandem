@@ -32,10 +32,14 @@ target_sources(
     "${_tandem_chat_dir}/parse-twitch.h"
     "${_tandem_chat_dir}/parse-youtube.cpp"
     "${_tandem_chat_dir}/parse-youtube.h"
+    "${_tandem_chat_dir}/parse-youtube-web.cpp"
+    "${_tandem_chat_dir}/parse-youtube-web.h"
     "${_tandem_chat_dir}/provider-base.cpp"
     "${_tandem_chat_dir}/provider-base.h"
     "${_tandem_chat_dir}/twitch-provider.cpp"
     "${_tandem_chat_dir}/youtube-provider.cpp"
+    "${_tandem_chat_dir}/youtube-web-provider.cpp"
+    "${_tandem_chat_dir}/youtube-web.h"
 )
 target_include_directories(tandem-chat-core PUBLIC "${_tandem_chat_dir}" "${_tandem_root}/dep/nlohmann-json")
 target_compile_features(tandem-chat-core PUBLIC cxx_std_20)

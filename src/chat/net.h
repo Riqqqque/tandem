@@ -42,6 +42,10 @@ const char *DefaultUserAgent();
 HttpResponse HttpGet(const std::string &url, const HttpHeaders &headers, long timeout_ms,
 		     const std::atomic<bool> *cancel, bool follow_redirects = true);
 
+// Blocking POST of `body` (send the Content-Type in headers). Same rules as HttpGet.
+HttpResponse HttpPost(const std::string &url, const HttpHeaders &headers, const std::string &body, long timeout_ms,
+		      const std::atomic<bool> *cancel, bool follow_redirects = true);
+
 // Long-lived GET for server-streaming responses. on_chunk receives body bytes of a 2xx response
 // as they arrive and returns false to stop. The transfer ends on completion, error, cancel, or
 // when no bytes arrive for idle_timeout_ms.

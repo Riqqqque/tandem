@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: GPL-2.0-or-later
 // Tandem - read-only YouTube live chat through the YouTube Data API v3 and the user's own key.
 // The key is sent only in the X-Goog-Api-Key header and is never logged or put in a URL.
+// Finding a channel's live video uses youtube.com's public /live page, which costs no quota.
 #include "backoff.h"
 #include "chat-util.h"
 #include "net.h"
 #include "parse-youtube.h"
 #include "provider-base.h"
+#include "youtube-web.h"
 
 #include <optional>
 
@@ -14,26 +16,20 @@ namespace tandem::chat {
 namespace {
 
 constexpr const char *kVideosUrl = "https://www.googleapis.com/youtube/v3/videos?part=liveStreamingDetails,snippet&id=";
-constexpr const char *kSearchUrl = "https://www.googleapis.com/youtube/v3/search?part=id&eventType=live&type=video"
-				   "&maxResults=1&channelId=";
 constexpr const char *kStreamUrl = "https://youtube.googleapis.com/youtube/v3/liveChat/messages/stream";
 constexpr const char *kPollUrl = "https://www.googleapis.com/youtube/v3/liveChat/messages";
 constexpr const char *kChatParams = "&part=snippet,authorDetails&maxResults=200";
 
 // Estimated quota costs (units). These are deliberately conservative:
 // - videos.list costs 1 unit.
-// - search.list costs 100 units and, as of 2026, also counts against a separate daily bucket
-//   of 100 search calls per project.
 // - liveChatMessages.list is documented at 1 unit today but historically cost 5; keep 5.
 // - streamList is billed per call; count 5 units for every (re)connection.
 constexpr int64_t kCostVideosList = 1;
-constexpr int64_t kCostSearch = 100;
 constexpr int64_t kCostPoll = 5;
 constexpr int64_t kCostStreamConnect = 5;
 
 constexpr auto kWaitForLiveVideo = std::chrono::seconds(60);
-// A channel search costs 100 units, so a channel waiting to go live is checked less often.
-constexpr auto kWaitForLiveChannel = std::chrono::minutes(5);
+constexpr auto kWaitForLiveChannel = std::chrono::seconds(30); // free: youtube.com's /live page
 constexpr long kStreamIdleTimeoutMs = 120000;
 constexpr auto kMinHealthyStream = std::chrono::seconds(10);
 
@@ -59,6 +55,7 @@ private:
 		End end = End::Retry;
 		std::string reason;
 		long retry_after_s = 0;
+		bool chat_ended = false;
 	};
 
 	HttpResponse Get(const std::string &url);
@@ -129,20 +126,29 @@ void YouTubeProvider::Run()
 	backoff_.Reset();
 	connected_ = false;
 
-	if (chat_id_.empty()) {
-		auto id = ResolveChatId();
-		if (!id)
-			return;
-		chat_id_ = *id;
-	}
+	const bool channel_target = ParseYouTubeTarget(cfg_.target).kind == YouTubeTarget::Kind::Channel;
 
 	while (!stopping()) {
+		if (chat_id_.empty()) {
+			auto id = ResolveChatId();
+			if (!id)
+				return;
+			chat_id_ = *id;
+			page_token_.clear();
+		}
 		PostStatus(ProviderState::Connecting, "live chat " + chat_id_);
 		auto started = Clock::now();
 		Outcome o = use_stream_ ? RunStream() : RunPoll();
 		if (o.end == End::Stop || stopping())
 			return;
 		if (o.end == End::Fatal) {
+			if (o.chat_ended && channel_target) {
+				// The stream is over; wait for the channel's next one.
+				Log(LogLevel::Info, "[chat/youtube] live chat ended; waiting for the next stream");
+				chat_id_.clear();
+				connected_ = false;
+				continue;
+			}
 			PostStatus(ProviderState::Error, o.reason);
 			return;
 		}
@@ -168,23 +174,12 @@ void YouTubeProvider::Run()
 
 std::optional<std::string> YouTubeProvider::ResolveChatId()
 {
-	std::string video_id;
-	const bool channel_mode = TrimAscii(cfg_.video).empty();
-	std::string channel_id(TrimAscii(cfg_.channel_id));
-	if (!channel_mode) {
-		auto id = ExtractYouTubeVideoId(cfg_.video);
-		if (!id) {
-			PostStatus(ProviderState::Error, "Not a YouTube video ID or URL");
-			return std::nullopt;
-		}
-		video_id = *id;
-	} else if (channel_id.empty()) {
-		PostStatus(ProviderState::Error, "Set a YouTube video or channel ID");
-		return std::nullopt;
-	} else if (!IsValidYouTubeChannelId(channel_id)) {
-		PostStatus(ProviderState::Error, "Invalid YouTube channel ID (expected UC...)");
+	YouTubeTarget target = ParseYouTubeTarget(cfg_.target);
+	if (target.kind == YouTubeTarget::Kind::Invalid) {
+		PostStatus(ProviderState::Error, "Enter your YouTube channel (@handle or link) or a live video link");
 		return std::nullopt;
 	}
+	bool channel_mode = target.kind == YouTubeTarget::Kind::Channel;
 
 	auto fail = [&](const HttpResponse &r) -> bool {
 		// Returns true when the caller should retry.
@@ -197,32 +192,37 @@ std::optional<std::string> YouTubeProvider::ResolveChatId()
 		PostStatus(ProviderState::Reconnecting, o.reason + ", " + RetryText(delay));
 		return WaitFor(delay);
 	};
-	auto wait_live = [&](const char *what, milliseconds d) {
-		PostStatus(ProviderState::Connecting, what);
+	auto wait_live = [&](const std::string &what, milliseconds d) {
+		PostStatus(ProviderState::Waiting, what);
 		return WaitFor(d);
 	};
 
 	while (!stopping()) {
 		PostStatus(ProviderState::Connecting, "Looking up the live chat");
-		std::string vid = video_id;
+		std::string vid = target.video_id;
 		if (channel_mode) {
-			HttpResponse r = Get(kSearchUrl + UrlEncode(channel_id));
+			YouTubeLiveLookup live = LookUpYouTubeLive(target, stop_flag());
 			if (stopping())
 				return std::nullopt;
-			if (r.status != 0)
-				AddQuota(kCostSearch);
-			if (!r.error.empty() || r.status != 200) {
-				if (!fail(r))
+			if (live.result == YouTubeLiveLookup::Result::NotFound) {
+				if (!target.could_be_video) {
+					PostStatus(ProviderState::Error, "YouTube channel " + target.label + " was not found");
+					return std::nullopt;
+				}
+				channel_mode = false; // a bare 11-character word: it was a video id
+			} else if (live.result == YouTubeLiveLookup::Result::Error) {
+				auto delay = backoff_.Next(Clock::now(), std::chrono::seconds(live.retry_after_s));
+				PostStatus(ProviderState::Reconnecting, "Couldn't reach YouTube (" + live.error + "), " + RetryText(delay));
+				if (!WaitFor(delay))
 					return std::nullopt;
 				continue;
-			}
-			auto found = ParseYouTubeSearchLive(r.body);
-			if (!found || found->empty()) {
-				if (!wait_live("Waiting for the stream to go live", kWaitForLiveChannel))
+			} else if (live.result == YouTubeLiveLookup::Result::NotLive) {
+				if (!wait_live(target.label + " isn't live yet; checking every 30 seconds", kWaitForLiveChannel))
 					return std::nullopt;
 				continue;
+			} else {
+				vid = live.video_id;
 			}
-			vid = *found;
 		}
 
 		HttpResponse r = Get(kVideosUrl + vid);
@@ -346,7 +346,7 @@ YouTubeProvider::Outcome YouTubeProvider::RunStream()
 	if (stopping())
 		return {End::Stop};
 	if (ended)
-		return {End::Fatal, "Live chat has ended"};
+		return {End::Fatal, "Live chat has ended", 0, true};
 
 	Outcome o;
 	o.retry_after_s = r.retry_after_s;
@@ -400,7 +400,7 @@ YouTubeProvider::Outcome YouTubeProvider::RunPoll()
 			return {End::Retry, "Unexpected response from YouTube"};
 		MarkConnected("polling");
 		if (HandlePage(page))
-			return {End::Fatal, "Live chat has ended"};
+			return {End::Fatal, "Live chat has ended", 0, true};
 		auto interval = std::max<int64_t>(1000, page.polling_interval_ms > 0 ? page.polling_interval_ms : 5000);
 		if (!WaitFor(milliseconds(interval)))
 			return {End::Stop};
@@ -411,6 +411,8 @@ YouTubeProvider::Outcome YouTubeProvider::RunPoll()
 
 std::unique_ptr<ChatProvider> CreateYouTubeProvider(YouTubeChatConfig cfg, ChatSink *sink)
 {
+	if (TrimAscii(cfg.api_key).empty())
+		return CreateYouTubeWebProvider(cfg.target, sink);
 	return std::make_unique<YouTubeProvider>(std::move(cfg), sink);
 }
 

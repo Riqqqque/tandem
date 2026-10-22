@@ -187,8 +187,10 @@ const char *DefaultUserAgent()
 	return "Tandem/" TANDEM_CHAT_VERSION;
 }
 
-HttpResponse HttpGet(const std::string &url, const HttpHeaders &headers, long timeout_ms,
-		     const std::atomic<bool> *cancel, bool follow_redirects)
+namespace {
+
+HttpResponse HttpRequest(const std::string &url, const HttpHeaders &headers, const std::string *post_body,
+			 long timeout_ms, const std::atomic<bool> *cancel, bool follow_redirects)
 {
 	EnsureCurlInit();
 	HttpResponse res;
@@ -202,7 +204,13 @@ HttpResponse HttpGet(const std::string &url, const HttpHeaders &headers, long ti
 	progress.cancel = cancel;
 	char errbuf[CURL_ERROR_SIZE] = {};
 	CommonOptions(c.get(), url.c_str(), hdrs.get(), &progress, errbuf, follow_redirects);
-	curl_easy_setopt(c.get(), CURLOPT_HTTPGET, 1L);
+	if (post_body) {
+		curl_easy_setopt(c.get(), CURLOPT_POST, 1L);
+		curl_easy_setopt(c.get(), CURLOPT_POSTFIELDS, post_body->data());
+		curl_easy_setopt(c.get(), CURLOPT_POSTFIELDSIZE_LARGE, static_cast<curl_off_t>(post_body->size()));
+	} else {
+		curl_easy_setopt(c.get(), CURLOPT_HTTPGET, 1L);
+	}
 	curl_easy_setopt(c.get(), CURLOPT_TIMEOUT_MS, timeout_ms);
 	curl_easy_setopt(c.get(), CURLOPT_CONNECTTIMEOUT_MS, std::min<long>(timeout_ms, 15000));
 	curl_easy_setopt(c.get(), CURLOPT_ACCEPT_ENCODING, "");
@@ -225,6 +233,20 @@ HttpResponse HttpGet(const std::string &url, const HttpHeaders &headers, long ti
 			res.error = ErrorText(rc, errbuf);
 	}
 	return res;
+}
+
+} // namespace
+
+HttpResponse HttpGet(const std::string &url, const HttpHeaders &headers, long timeout_ms,
+		     const std::atomic<bool> *cancel, bool follow_redirects)
+{
+	return HttpRequest(url, headers, nullptr, timeout_ms, cancel, follow_redirects);
+}
+
+HttpResponse HttpPost(const std::string &url, const HttpHeaders &headers, const std::string &body, long timeout_ms,
+		      const std::atomic<bool> *cancel, bool follow_redirects)
+{
+	return HttpRequest(url, headers, &body, timeout_ms, cancel, follow_redirects);
 }
 
 namespace {

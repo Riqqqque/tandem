@@ -7,7 +7,7 @@ No, if the targets reuse OBS's encoder (the default). One encode feeds every out
 Yes. Every target and every chat platform is opt-in. Untick or remove what you don't use.
 
 **Do I need accounts or a paid relay service?**
-No. Tandem connects directly from your computer to each platform. Twitch and Kick chat need no login; YouTube chat needs a free API key from your own Google account.
+No. Tandem connects directly from your computer to each platform. Twitch, Kick and YouTube chat need no login and no API key: you only enter your channel. (An official YouTube API key is optional, see [Platform setup](Platform-Setup.md#optional-official-youtube-api-key).)
 
 **Can I send chat messages from the dock?**
 Not yet. The chat is read-only for now.

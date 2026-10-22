@@ -116,8 +116,7 @@ void ChatController::StartProvider(int index)
 		}
 		YouTubeChatConfig yt;
 		yt.api_key = chat.youtubeApiKey;
-		yt.video = cfg.channel;
-		yt.channel_id = cfg.extra;
+		yt.target = cfg.channel.empty() ? cfg.extra : cfg.channel;
 		yt.quota_used_today = chat.youtubeQuotaUsed;
 		yt.on_quota = [](int64_t used) {
 			GetGlobalService().RunInUIThread([used]() { GetChatController().OnQuota(used); });
@@ -182,6 +181,12 @@ void ChatController::ApplyConfig()
 		return;
 	auto &chat = GlobalMultiOutputConfig().chat;
 	emotes_.SetEnabled(chat.thirdPartyEmotes);
+	// Chat that was just turned on while OBS is already live starts right away.
+	bool anyEnabled = chat.twitch.enabled || chat.kick.enabled || chat.youtube.enabled;
+	if (!running_ && anyEnabled && chat.startWithStream && IsFrontendReady() && obs_frontend_streaming_active()) {
+		StartChat();
+		startedWithStream_ = true;
+	}
 	if (running_) {
 		for (int i = 0; i < kPlatformCount; ++i) {
 			auto &cfg = PlatformConfig(chat, i);

@@ -46,6 +46,8 @@ const char *ProviderStateName(ProviderState s)
 		return "reconnecting";
 	case ProviderState::Error:
 		return "error";
+	case ProviderState::Waiting:
+		return "waiting";
 	}
 	return "unknown";
 }

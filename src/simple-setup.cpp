@@ -40,11 +40,6 @@ QLineEdit *MakeSecretEdit(QWidget *parent, QHBoxLayout **row)
 }
 
 // A YouTube channel id looks like UC + 22 characters; anything else is treated as a video.
-bool LooksLikeChannelId(const QString &s)
-{
-	return s.size() == 24 && s.startsWith("UC") && !s.contains('/');
-}
-
 struct PlatformCard {
 	int index = 0;
 	const char *targetId = nullptr;
@@ -56,7 +51,7 @@ struct PlatformCard {
 	QLabel *status = nullptr;
 	QCheckBox *chat = nullptr;
 	QLineEdit *channel = nullptr;
-	QLineEdit *apiKey = nullptr; // YouTube only
+	bool youtube = false;
 	QWidget *chatFields = nullptr;
 	QWidget *streamFields = nullptr;
 };
@@ -167,17 +162,9 @@ private:
 		chatForm->setContentsMargins(0, 0, 0, 0);
 		c.channel = new QLineEdit(c.chatFields);
 		if (strcmp(c.preset->id, "youtube") == 0) {
-			QHBoxLayout *apiRow = nullptr;
-			c.apiKey = MakeSecretEdit(c.chatFields, &apiRow);
-			c.apiKey->setPlaceholderText(Text("Simple.ApiKeyPlaceholder"));
-			chatForm->addRow(Text("Chat.YouTube.ApiKey"), apiRow);
-			c.channel->setPlaceholderText(Text("Simple.YouTubeVideoPlaceholder"));
-			chatForm->addRow(Text("Simple.YouTubeVideo"), c.channel);
-			auto link = new QLabel(Text("Chat.YouTube.ApiKeyHelp"), c.chatFields);
-			link->setTextFormat(Qt::RichText);
-			link->setOpenExternalLinks(true);
-			link->setWordWrap(true);
-			chatForm->addRow(link);
+			c.youtube = true;
+			c.channel->setPlaceholderText(Text("Chat.YouTube.ChannelHint"));
+			chatForm->addRow(Text("Chat.YouTube.Channel"), c.channel);
 		} else {
 			c.channel->setPlaceholderText(strcmp(c.preset->id, "twitch") == 0 ? Text("Chat.Twitch.ChannelHint")
 											   : Text("Chat.Kick.ChannelHint"));
@@ -207,8 +194,7 @@ private:
 			}
 			auto &chat = ChatCfg(c.index);
 			c.chat->setChecked(chat.enabled);
-			if (c.apiKey) {
-				c.apiKey->setText(QString::fromUtf8(global.chat.youtubeApiKey.c_str()));
+			if (c.youtube) {
 				c.channel->setText(QString::fromUtf8((chat.channel.empty() ? chat.extra : chat.channel).c_str()));
 			} else {
 				c.channel->setText(QString::fromUtf8(chat.channel.c_str()));
@@ -240,8 +226,6 @@ private:
 				Apply();
 			});
 			QObject::connect(c.channel, &QLineEdit::editingFinished, this, save);
-			if (c.apiKey)
-				QObject::connect(c.apiKey, &QLineEdit::editingFinished, this, save);
 		}
 		QObject::connect(quality_, (void (QComboBox::*)(int)) & QComboBox::currentIndexChanged, this, [this](int) {
 			Apply();
@@ -341,18 +325,10 @@ private:
 			auto &chat = ChatCfg(c.index);
 			chat.enabled = c.chat->isChecked();
 			QString channel = c.channel->text().trimmed();
-			if (c.apiKey) {
-				global.chat.youtubeApiKey = tostdu8(c.apiKey->text().trimmed());
-				if (LooksLikeChannelId(channel)) {
-					chat.channel.clear();
-					chat.extra = tostdu8(channel);
-				} else {
-					chat.channel = tostdu8(channel);
-					chat.extra.clear();
-				}
-			} else {
-				chat.channel = tostdu8(channel);
-			}
+			// YouTube takes a channel or a video in one field; the old channel-id field is folded in.
+			chat.channel = tostdu8(channel);
+			if (c.youtube)
+				chat.extra.clear();
 		}
 
 		SaveMultiOutputConfig();

@@ -482,17 +482,34 @@ private:
 			auto st = ctl.Hub().Status(p);
 			QString state;
 			QString color = "gray";
+			QString why; // tooltip line explaining the state
+			const bool hasChannel = !cfgs[i]->channel.empty() || !cfgs[i]->extra.empty();
 			if (!cfgs[i]->enabled) {
 				state = obs_module_text("Chat.State.Off");
+				why = obs_module_text("Chat.Why.Off");
+			} else if (!hasChannel) {
+				state = obs_module_text("Chat.State.NeedsChannel");
+				color = "#c9a227";
+				why = obs_module_text("Chat.Why.NeedsChannel");
 			} else if (!ctl.IsRunning()) {
-				state = obs_module_text("Chat.State.Idle");
+				if (chat.startWithStream) {
+					state = obs_module_text("Chat.State.StartsWithStream");
+					why = obs_module_text("Chat.Why.StartsWithStream");
+				} else {
+					state = obs_module_text("Chat.State.NotStarted");
+					why = obs_module_text("Chat.Why.NotStarted");
+				}
 			} else {
 				switch (st.state) {
 				case ProviderState::Connected:
 					state = obs_module_text("Chat.State.Connected");
 					color = "#3a9a2f";
 					break;
+				case ProviderState::Waiting:
+					state = obs_module_text("Chat.State.Waiting");
+					break;
 				case ProviderState::Connecting:
+				case ProviderState::Stopped: // just (re)started; the provider reports in a moment
 					state = obs_module_text("Chat.State.Connecting");
 					color = "#c9a227";
 					break;
@@ -504,16 +521,14 @@ private:
 					state = obs_module_text("Chat.State.Error");
 					color = "#e5534b";
 					break;
-				case ProviderState::Stopped:
-					state = obs_module_text("Chat.State.Idle");
-					break;
 				}
+				why = QString::fromUtf8(st.detail.c_str());
 			}
 			filters_[i]->setText(QString("%1: %2").arg(PlatformName(p), state));
 			filters_[i]->setStyleSheet(QString("QCheckBox { color: %1; }").arg(color));
 			QString tip = QString::fromUtf8(obs_module_text("Chat.FilterTip"));
-			if (!st.detail.empty())
-				tip = QString::fromUtf8(st.detail.c_str()) + "\n\n" + tip;
+			if (!why.isEmpty())
+				tip = why + "\n\n" + tip;
 			filters_[i]->setToolTip(tip);
 		}
 	}

@@ -32,7 +32,7 @@ Everything is opt-in. Stream to one platform, two, or all three; read chat from 
 - One dock with messages from Twitch, Kick and YouTube, labeled by platform, with author colors, roles and optional timestamps.
 - Emotes as images: Twitch and Kick emotes, plus **7TV, BetterTTV and FrankerFaceZ** emotes (the ones viewers see with those browser extensions).
 - Show/hide each platform, see each platform's connection status at a glance.
-- Read-only. Twitch needs only a channel name, Kick only a channel slug, YouTube your own free API key.
+- Read-only and no logins: Twitch needs only your channel name, Kick your channel slug, YouTube your `@handle`. Chat for YouTube connects by itself whenever you go live.
 - Updates are batched, the list is capped (500 messages by default), and all networking runs off OBS's video, audio and UI threads.
 
 **Overlay (optional)**
@@ -68,7 +68,7 @@ If you used obs-multi-rtmp before, Tandem imports its targets from the same OBS 
 **Simple mode** (the default):
 
 1. In the **Tandem** dock, tick **Stream here** on each platform you want.
-2. Paste each stream key; each card links to the page where the platform shows it ([Twitch](https://dashboard.twitch.tv/settings/stream), [Kick](https://dashboard.kick.com/channel/stream), [YouTube Studio](https://studio.youtube.com/) → Go live). Optionally tick **Show this chat** and enter your channel name (YouTube also needs a free [API key](docs/wiki/Platform-Setup.md#youtube); the settings link to where you get it).
+2. Paste each stream key; each card links to the page where the platform shows it ([Twitch](https://dashboard.twitch.tv/settings/stream), [Kick](https://dashboard.kick.com/channel/stream), [YouTube Studio](https://studio.youtube.com/) → Go live). Optionally tick **Show this chat** and enter your channel name (for YouTube, your `@handle`; no API key needed).
 3. Press **Go Live**.
 
 Tandem picks the best H.264 encoder on your computer (NVIDIA, AMD, Intel or Apple hardware, otherwise x264) and a bitrate that fits your resolution, and every platform shares that one encode. Ticked platforms also go live when you click OBS's own **Start Streaming**.

@@ -103,35 +103,54 @@ void ShowTandemSettings(QWidget *parent, int tab)
 		chatLayout->addWidget(gp);
 	}
 	QLineEdit *apiKey = nullptr;
+	QGroupBox *useApi = nullptr;
 	{
 		auto gp = new QGroupBox("YouTube", chatPage);
 		auto form = new QFormLayout(gp);
 		rows[2].enabled = new QCheckBox(Text("Chat.ReadChat"), gp);
 		QHBoxLayout *keyRow = nullptr;
-		apiKey = SecretEdit(gp, &keyRow);
-		apiKey->setText(QString::fromUtf8(chat.youtubeApiKey.c_str()));
-		rows[2].channel = new QLineEdit(QString::fromUtf8(chat.youtube.channel.c_str()), gp);
-		rows[2].channel->setPlaceholderText(Text("Chat.YouTube.VideoHint"));
-		rows[2].extra = new QLineEdit(QString::fromUtf8(chat.youtube.extra.c_str()), gp);
-		rows[2].extra->setPlaceholderText(Text("Chat.YouTube.ChannelHint"));
+		// Older versions kept a channel id in a second field; show it in the one field now.
+		const std::string &target = chat.youtube.channel.empty() ? chat.youtube.extra : chat.youtube.channel;
+		rows[2].channel = new QLineEdit(QString::fromUtf8(target.c_str()), gp);
+		rows[2].channel->setPlaceholderText(Text("Chat.YouTube.ChannelHint"));
 		form->addRow(rows[2].enabled);
-		form->addRow(Text("Chat.YouTube.ApiKey"), keyRow);
-		auto keyHelp = new QLabel(Text("Chat.YouTube.ApiKeyHelp"), gp);
+		form->addRow(Text("Chat.YouTube.Channel"), rows[2].channel);
+		auto note = new QLabel(Text("Chat.YouTube.Note"), gp);
+		note->setWordWrap(true);
+		form->addRow(note);
+
+		// The official API is optional: only for people who'd rather not rely on the web chat.
+		auto apiBox = new QGroupBox(Text("Chat.YouTube.ApiTitle"), gp);
+		apiBox->setCheckable(true);
+		apiBox->setChecked(!chat.youtubeApiKey.empty());
+		auto apiForm = new QFormLayout(apiBox);
+		auto apiWidgets = new QWidget(apiBox);
+		auto apiInner = new QFormLayout(apiWidgets);
+		apiInner->setContentsMargins(0, 0, 0, 0);
+		apiKey = SecretEdit(apiWidgets, &keyRow);
+		apiKey->setText(QString::fromUtf8(chat.youtubeApiKey.c_str()));
+		apiInner->addRow(Text("Chat.YouTube.ApiKey"), keyRow);
+		auto keyHelp = new QLabel(Text("Chat.YouTube.ApiKeyHelp"), apiWidgets);
 		keyHelp->setTextFormat(Qt::RichText);
 		keyHelp->setOpenExternalLinks(true);
-		keyHelp->setWordWrap(true);
-		form->addRow(keyHelp);
-		form->addRow(Text("Chat.YouTube.Video"), rows[2].channel);
-		form->addRow(Text("Chat.YouTube.Channel"), rows[2].extra);
+		// Short lines with explicit breaks: word wrap would size the label while the box is
+		// still hidden and cut off its last line.
+		keyHelp->setWordWrap(false);
+		apiInner->addRow(keyHelp);
 		int64_t used = chat.youtubeQuotaDay == YouTubeQuotaDay() ? chat.youtubeQuotaUsed : 0;
-		auto quota = new QLabel(Text("Chat.YouTube.Quota").arg(used).arg(10000), gp);
+		auto quota = new QLabel(Text("Chat.YouTube.Quota").arg(used).arg(10000), apiWidgets);
 		quota->setWordWrap(true);
-		form->addRow(quota);
+		apiInner->addRow(quota);
 		if (!tandem::SecretStoreAvailable()) {
-			auto warn = new QLabel(Text("Settings.NoSecretStore"), gp);
+			auto warn = new QLabel(Text("Settings.NoSecretStore"), apiWidgets);
 			warn->setWordWrap(true);
-			form->addRow(warn);
+			apiInner->addRow(warn);
 		}
+		apiForm->addRow(apiWidgets);
+		apiWidgets->setVisible(apiBox->isChecked());
+		QObject::connect(apiBox, &QGroupBox::toggled, apiWidgets, &QWidget::setVisible);
+		useApi = apiBox;
+		form->addRow(apiBox);
 		chatLayout->addWidget(gp);
 	}
 	rows[0].enabled->setChecked(chat.twitch.enabled);
@@ -220,7 +239,9 @@ void ShowTandemSettings(QWidget *parent, int tab)
 		if (rows[i].extra)
 			cfgs[i]->extra = trimmed(rows[i].extra);
 	}
-	chat.youtubeApiKey = trimmed(apiKey);
+	chat.youtube.extra.clear(); // folded into the one YouTube field
+	// Unticking the API box keeps nothing around: the key is removed from the credential store.
+	chat.youtubeApiKey = useApi->isChecked() ? trimmed(apiKey) : std::string();
 	chat.startWithStream = startWithStream->isChecked();
 	chat.showTimestamps = timestamps->isChecked();
 	chat.thirdPartyEmotes = extEmotes->isChecked();

@@ -70,18 +70,18 @@ TEST_CASE(provider_kick_invalid_config)
 	CheckRestartCycle(CreateKickProvider(cfg, &hub), hub, sub, "Invalid Kick chatroom ID (digits only)");
 }
 
-TEST_CASE(provider_youtube_missing_key_and_bad_video)
+TEST_CASE(provider_youtube_bad_target_with_and_without_key)
 {
+	const char *expect = "Enter your YouTube channel (@handle or link) or a live video link";
 	ChatHub hub;
 	int sub = hub.Subscribe();
-	YouTubeChatConfig cfg;
-	cfg.video = "abcDEF12345";
-	CheckRestartCycle(CreateYouTubeProvider(cfg, &hub), hub, sub, "YouTube API key is missing");
+	YouTubeChatConfig keyless;
+	keyless.target = "https://example.invalid/watch?v=abcDEF12345";
+	CheckRestartCycle(CreateYouTubeProvider(keyless, &hub), hub, sub, expect);
 
-	YouTubeChatConfig bad;
-	bad.api_key = "not-used";
-	bad.video = "https://example.invalid/watch?v=abcDEF12345";
-	CheckRestartCycle(CreateYouTubeProvider(bad, &hub), hub, sub, "Not a YouTube video ID or URL");
+	YouTubeChatConfig keyed = keyless;
+	keyed.api_key = "not-used";
+	CheckRestartCycle(CreateYouTubeProvider(keyed, &hub), hub, sub, expect);
 }
 
 TEST_CASE(provider_destructor_stops_running_provider)

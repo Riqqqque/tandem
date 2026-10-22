@@ -175,7 +175,7 @@ EmoteMap ParseFfzGlobal(std::string_view body)
 namespace {
 const char *const kEmoteHosts[] = {
 	"https://static-cdn.jtvnw.net/", "https://files.kick.com/",       "https://cdn.7tv.app/",
-	"https://cdn.betterttv.net/",    "https://cdn.frankerfacez.com/",
+	"https://cdn.betterttv.net/",    "https://cdn.frankerfacez.com/", "https://yt3.ggpht.com/",
 };
 } // namespace
 
@@ -197,7 +197,7 @@ bool IsTrustedEmoteUrl(std::string_view url)
 const char *EmoteCspSources()
 {
 	return "https://static-cdn.jtvnw.net https://files.kick.com https://cdn.7tv.app https://cdn.betterttv.net "
-	       "https://cdn.frankerfacez.com";
+	       "https://cdn.frankerfacez.com https://yt3.ggpht.com";
 }
 
 void AnnotateWords(ChatMessage &m, const EmoteMap &map)

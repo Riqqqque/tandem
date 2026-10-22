@@ -5,7 +5,7 @@ Tandem has no telemetry, analytics, crash reporting or update checks. It has no 
 ## What stays on your computer
 
 - **Stream keys, stream passwords and WHIP tokens**: on Windows they are saved in Windows Credential Manager under `Tandem/target/<id>/...`. On macOS and Linux they are saved in the OBS profile folder (`tandem.json`), like OBS stores its own stream key.
-- **YouTube API key**: Windows Credential Manager (`Tandem/chat/youtube/api-key`) on Windows, otherwise the OBS profile folder.
+- **YouTube API key** (optional, only if you turn on the official API): Windows Credential Manager (`Tandem/chat/youtube/api-key`) on Windows, otherwise the OBS profile folder.
 - **Settings** (targets, chat channels, overlay options, the YouTube quota estimate): `tandem.json` in each OBS profile folder.
 - **Chat messages** are kept in memory only (500 by default) and are never written to disk.
 - Keys are never written to the OBS log.
@@ -19,8 +19,9 @@ Only when you turn the matching feature on:
 | Streaming targets | The RTMP/RTMPS/SRT/WHIP server URL you configure (for presets: Twitch `ingest.global-contribute.live-video.net`, Kick `fa723fc1b171.global-contribute.live-video.net`, YouTube `a.rtmps.youtube.com`) | Sends your stream |
 | Twitch chat | `wss://irc-ws.chat.twitch.tv` | Reads public chat anonymously (no login) |
 | Kick chat | `https://kick.com/api/v2/channels/<slug>` and `wss://ws-us2.pusher.com` | Looks up the chat room, then reads public chat (the same feed kick.com uses) |
-| YouTube chat | `https://www.googleapis.com/youtube/v3/...` and `https://youtube.googleapis.com/youtube/v3/liveChat/messages/stream` | Finds the live chat and reads it with your API key, sent in the `X-Goog-Api-Key` header (never in the URL) |
-| Emotes | `7tv.io`, `api.betterttv.net`, `api.frankerfacez.com` (emote lists) and the image servers `static-cdn.jtvnw.net`, `files.kick.com`, `cdn.7tv.app`, `cdn.betterttv.net`, `cdn.frankerfacez.com` | Loads the emote lists for the channels whose chat you read, and the emote images. Can be turned off for 7TV/BetterTTV/FrankerFaceZ in Settings → Chat |
+| YouTube chat | `https://www.youtube.com` (your channel's `/live` page, the live chat page and its chat endpoint) | Finds your live stream and reads its public chat, like a logged-out viewer. No account cookies or keys are sent. |
+| YouTube chat, only with the optional API key | `https://www.googleapis.com/youtube/v3/...` and `https://youtube.googleapis.com/youtube/v3/liveChat/messages/stream` | Reads the live chat with your API key, sent in the `X-Goog-Api-Key` header (never in the URL) |
+| Emotes | `7tv.io`, `api.betterttv.net`, `api.frankerfacez.com` (emote lists) and the image servers `static-cdn.jtvnw.net`, `files.kick.com`, `cdn.7tv.app`, `cdn.betterttv.net`, `cdn.frankerfacez.com`, `yt3.ggpht.com` (YouTube channel emoji) | Loads the emote lists for the channels whose chat you read, and the emote images. Can be turned off for 7TV/BetterTTV/FrankerFaceZ in Settings → Chat |
 | Overlay | Listens on `127.0.0.1` only | Serves the overlay page to OBS's Browser Source on the same computer |
 
 Those platforms see the same thing a normal viewer's browser would: your IP address and the channel you open. Their privacy policies apply to that traffic.
